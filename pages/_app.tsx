@@ -4,6 +4,7 @@ import React from "react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { appWithTranslation, i18n } from "next-i18next";
+import { DefaultSeo } from "next-seo";
 import { ThemeProvider } from "next-themes";
 import { AppMDXComponents } from "@components/layout/AppMDXComponents";
 import { AppTopBar } from "@components/layout/AppTopBar";
@@ -13,6 +14,7 @@ import { MDXProvider } from "@mdx-js/react";
 import CssBaseline from "@mui/material/CssBaseline";
 import createEmotionCache from "utils/createEmotionCache";
 
+import SEO from "../next-seo.config";
 import { MUIThemeProvider } from "../utils/MUIThemeProvider";
 
 // Client-side cache, shared for the whole session of the user in the browser.
@@ -40,8 +42,8 @@ function MyApp({
   return (
     <CacheProvider value={emotionCache}>
       <MDXProvider components={AppMDXComponents}>
+        <DefaultSeo {...SEO} />
         <Head>
-          <title>BuddhaNexus</title>
           <meta name="viewport" content="initial-scale=1, width=device-width" />
         </Head>
 
