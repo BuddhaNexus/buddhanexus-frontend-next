@@ -7,6 +7,12 @@
     "support": "Unterstützung",
     "database": "Datenbank"
   },
+  "language": {
+    "pli": "Pāli",
+    "chn": "Chinese",
+    "skt": "Sanskrit",
+    "tib": "Tibetan"
+  },
   "footer": {
     "about": "Über",
     "introduction": "Einführung",
@@ -20,6 +26,10 @@
     "publications": "Veröffentlichungen",
     "events": "Veranstaltungen",
     "projects": "Projekte",
-    "presentations": "Präsentationen"
+    "presentations": "Präsentationen",
+    "contact": "Kontakt"
+  },
+  "db": {
+    "searchInputPlaceholder": "Choose source text"
   }
 }

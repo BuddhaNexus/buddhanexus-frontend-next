@@ -1,52 +1,56 @@
 import type { PaletteMode, ThemeOptions } from "@mui/material";
+import { grey } from "@mui/material/colors";
+import { Source_Sans_3, Source_Serif_4 } from "@next/font/google";
+import { SourceLanguage } from "utils/constants";
 
-export const serifFontFamily = [
-  "Source Serif Pro",
-  "PT Serif",
-  "serif",
-  "ui-serif",
-].join(",");
+export const sourceSerif = Source_Serif_4();
+export const sourceSans = Source_Sans_3();
 
-export const sansFontFamily = [
-  "Source Sans Pro",
-  "-apple-system",
-  "BlinkMacSystemFont",
-  '"Segoe UI"',
-  '"Helvetica Neue"',
-  "Arial",
-  "sans-serif",
-  '"Apple Color Emoji"',
-  '"Segoe UI Emoji"',
-  '"Segoe UI Symbol"',
-].join(",");
+interface DesignTokenParams {
+  mode: PaletteMode;
+  // some of the theme elements depend on the source language selected
+  sourceLanguage: SourceLanguage;
+}
 
-export const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
+const SOURCE_LANGUAGE_COLORS = {
+  [SourceLanguage.CHINESE]: "#4F2B56",
+  [SourceLanguage.PALI]: "#7C3A00",
+  [SourceLanguage.SANSKRIT]: "#2C284C",
+  [SourceLanguage.TIBETAN]: "#66160E",
+};
+
+export const getDesignTokens = ({
+  mode,
+  sourceLanguage,
+}: DesignTokenParams): ThemeOptions => ({
   typography: {
-    button: { fontFamily: sansFontFamily },
-    h1: { fontFamily: serifFontFamily },
-    h2: { fontFamily: serifFontFamily },
-    h3: { fontFamily: serifFontFamily },
-    h4: { fontFamily: serifFontFamily },
-    h5: { fontFamily: serifFontFamily },
-    h6: { fontFamily: sansFontFamily },
-    body1: { fontFamily: sansFontFamily },
-    body2: { fontFamily: sansFontFamily },
-    subtitle1: { fontFamily: serifFontFamily },
-    subtitle2: { fontFamily: serifFontFamily },
+    button: { fontFamily: sourceSans.style.fontFamily },
+    h1: { fontFamily: sourceSerif.style.fontFamily },
+    h2: { fontFamily: sourceSerif.style.fontFamily, fontWeight: 400 },
+    h3: { fontFamily: sourceSerif.style.fontFamily },
+    h4: { fontFamily: sourceSerif.style.fontFamily },
+    h5: { fontFamily: sourceSerif.style.fontFamily },
+    h6: { fontFamily: sourceSans.style.fontFamily },
+    body1: { fontFamily: sourceSans.style.fontFamily },
+    body2: { fontFamily: sourceSans.style.fontFamily },
+    subtitle1: { fontFamily: sourceSerif.style.fontFamily },
+    subtitle2: { fontFamily: sourceSerif.style.fontFamily },
   },
   palette: {
     mode,
     common: {
-      pali: "#7C3A00",
-      sanskrit: "#2C284C",
-      tibetan: "#66160E",
-      chinese: "#4F2B56",
+      pali: SOURCE_LANGUAGE_COLORS[SourceLanguage.PALI],
+      sanskrit: SOURCE_LANGUAGE_COLORS[SourceLanguage.SANSKRIT],
+      tibetan: SOURCE_LANGUAGE_COLORS[SourceLanguage.TIBETAN],
+      chinese: SOURCE_LANGUAGE_COLORS[SourceLanguage.CHINESE],
     },
     ...(mode === "light"
       ? {
           // palette values for light mode
           primary: {
-            main: "#361F0D",
+            main: sourceLanguage
+              ? SOURCE_LANGUAGE_COLORS[sourceLanguage]
+              : "#361F0D",
           },
           secondary: {
             main: "#C23211",
@@ -54,6 +58,8 @@ export const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
           background: {
             default: "#efe0c2",
             paper: "#ffffff",
+            // @ts-expect-error: TODO: fix type issue with adding custom colors to palette
+            accent: grey[50],
           },
           error: {
             main: "#CC0202",
@@ -92,6 +98,7 @@ export const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
           },
           background: {
             paper: "#28170a",
+            accent: grey[900],
           },
         }),
   },

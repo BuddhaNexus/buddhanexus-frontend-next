@@ -1,4 +1,4 @@
-import "../globalStyles.css";
+import "globalStyles.css";
 
 import React from "react";
 import type { AppProps } from "next/app";
@@ -12,10 +12,13 @@ import type { EmotionCache } from "@emotion/react";
 import { CacheProvider } from "@emotion/react";
 import { MDXProvider } from "@mdx-js/react";
 import CssBaseline from "@mui/material/CssBaseline";
+import {
+  Hydrate,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import createEmotionCache from "utils/createEmotionCache";
-
-import SEO from "../next-seo.config";
-import { MUIThemeProvider } from "../utils/MUIThemeProvider";
+import { MUIThemeProvider } from "utils/MUIThemeProvider";
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
@@ -39,21 +42,30 @@ function MyApp({
   pageProps,
   emotionCache = clientSideEmotionCache,
 }: MyAppProps) {
+  const [queryClient] = React.useState(() => new QueryClient());
+
   return (
     <CacheProvider value={emotionCache}>
       <MDXProvider components={AppMDXComponents}>
-        <DefaultSeo {...SEO} />
-        <Head>
-          <meta name="viewport" content="initial-scale=1, width=device-width" />
-        </Head>
+        <QueryClientProvider client={queryClient}>
+          <Hydrate state={pageProps.dehydratedState}>
+            <Head>
+              <title>BuddhaNexus</title>
+              <meta
+                name="viewport"
+                content="initial-scale=1, width=device-width"
+              />
+            </Head>
 
-        <ThemeProvider>
-          <MUIThemeProvider>
-            <CssBaseline />
-            <AppTopBar />
-            <Component {...pageProps} />
-          </MUIThemeProvider>
-        </ThemeProvider>
+            <ThemeProvider>
+              <MUIThemeProvider>
+                <CssBaseline />
+                <AppTopBar />
+                <Component {...pageProps} />
+              </MUIThemeProvider>
+            </ThemeProvider>
+          </Hydrate>
+        </QueryClientProvider>
       </MDXProvider>
     </CacheProvider>
   );
