@@ -18,6 +18,8 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import createEmotionCache from "utils/createEmotionCache";
+
+import SEO from "../next-seo.config";
 import { MUIThemeProvider } from "utils/MUIThemeProvider";
 
 // Client-side cache, shared for the whole session of the user in the browser.
@@ -49,8 +51,8 @@ function MyApp({
       <MDXProvider components={AppMDXComponents}>
         <QueryClientProvider client={queryClient}>
           <Hydrate state={pageProps.dehydratedState}>
+          <DefaultSeo {...SEO} />
             <Head>
-              <title>BuddhaNexus</title>
               <meta
                 name="viewport"
                 content="initial-scale=1, width=device-width"
