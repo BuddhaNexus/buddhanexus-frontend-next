@@ -1,4 +1,4 @@
-import type { DbView } from "features/sidebar/settingComponents/DbViewSelector";
+import type { DbView } from "utils/dbUISettings";
 
 // import { API_ROOT_URL, RESULTS_DOWNLOAD_ROOT_URL } from "./constants";
 import { API_ROOT_URL } from "./constants";

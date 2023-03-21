@@ -4,11 +4,13 @@ import { DbResultsPageHead } from "@components/db/DbResultsPageHead";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { PageContainer } from "@components/layout/PageContainer";
-import { CircularProgress, Typography } from "@mui/material";
-import { dehydrate, QueryClient, useQuery } from "@tanstack/react-query";
+import { CircularProgress } from "@mui/material";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import NumbersView from "features/numbersView/NumbersView";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
-import type { ApiSegmentsData } from "types/api/common";
+import type { PagedResponse } from "types/api/common";
 import { DbApi } from "utils/api/dbApi";
+import type { NumbersPageData } from "utils/api/numbers";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getSourceTextStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
@@ -18,11 +20,22 @@ export default function NumbersPage() {
   const { isFallback } = useSourceFile();
 
   // TODO: add error handling
-  const { data, isLoading } = useQuery<ApiSegmentsData>({
-    queryKey: [DbApi.SegmentsData.makeQueryKey(fileName), serializedParams],
-    queryFn: () => DbApi.SegmentsData.call(fileName, serializedParams),
-    refetchOnWindowFocus: false,
-  });
+  const { data, fetchNextPage, fetchPreviousPage, isInitialLoading } =
+    useInfiniteQuery<PagedResponse<NumbersPageData>>({
+      queryKey: [DbApi.NumbersView.makeQueryKey(fileName), serializedParams],
+      queryFn: ({ pageParam = 0 }) =>
+        DbApi.NumbersView.call({
+          fileName,
+          pageNumber: pageParam,
+          serializedParams,
+        }),
+      getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
+      getPreviousPageParam: (lastPage) =>
+        lastPage.pageNumber === 0
+          ? lastPage.pageNumber
+          : lastPage.pageNumber - 1,
+      refetchOnWindowFocus: false,
+    });
 
   if (isFallback) {
     return (
@@ -43,24 +56,23 @@ export default function NumbersPage() {
       {/* Just printing some example data: */}
       {/* The deta should probably be transformed according to our needs before using it here. */}
 
-      {isLoading ? (
+      {isInitialLoading || !data ? (
         <CircularProgress color="inherit" />
       ) : (
-        data?.collections[0].map((collection) => {
-          const [[collectionId, collectionName]] = Object.entries(collection);
-          return (
-            <Typography key={collectionId}>
-              {collectionId}: {collectionName}
-            </Typography>
-          );
-        })
+        <div style={{ height: "100vh" }}>
+          <NumbersView
+            data={data.pages.flatMap((page) => page.data)}
+            onEndReached={fetchNextPage}
+            onStartReached={fetchPreviousPage}
+          />
+        </div>
       )}
       <SourceTextBrowserDrawer />
     </PageContainer>
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const i18nProps = await getI18NextStaticProps(
     {
       locale,
@@ -68,15 +80,9 @@ export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
     ["settings"]
   );
 
-  const queryClient = new QueryClient();
-
-  const fileName = params?.file as string;
-  await queryClient.prefetchQuery(
-    DbApi.SegmentsData.makeQueryKey(fileName),
-    () => DbApi.SegmentsData.call(fileName, "?page=0")
-  );
-
   return {
-    props: { dehydratedState: dehydrate(queryClient), ...i18nProps.props },
+    props: {
+      ...i18nProps.props,
+    },
   };
 };

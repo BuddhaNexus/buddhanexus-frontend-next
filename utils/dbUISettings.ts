@@ -1,11 +1,13 @@
 /* eslint-disable no-inline-comments */
 /* eslint-disable line-comment-position */
-import type { DbView } from "features/sidebar/settingComponents/DbViewSelector";
 import { atom } from "jotai";
 import type { CategoryMenuItem, TextMenuItem } from "utils/api/textLists";
 
 const dbLangs = ["pli", "chn", "tib", "skt"] as const;
 export type DbLang = (typeof dbLangs)[number];
+
+export const views = ["graph", "numbers", "table", "text"] as const;
+export type DbView = (typeof views)[number];
 
 export const filterList = [
   "limit_collection",
@@ -42,6 +44,10 @@ export type UtilityOption = (typeof utilityOptionList)[number];
 
 type ViewOmission = (DbLang | "allLangs")[];
 type SettingContext = Partial<Record<DbView, ViewOmission>>;
+
+export const VIEW_CONTEXT_OMISSIONS: Partial<Record<DbView, ViewOmission>> = {
+  numbers: ["tib", "skt"],
+};
 
 export type FilterOmissions = Partial<Record<Filter, SettingContext>>;
 export const FILTER_CONTEXT_OMISSIONS: FilterOmissions = {

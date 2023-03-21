@@ -1,10 +1,9 @@
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
+import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { atom, useSetAtom } from "jotai";
-
-export const VIEWS = ["graph", "numbers", "table", "text"] as const;
-export type DbView = (typeof VIEWS)[number];
+import { type DbView, VIEW_CONTEXT_OMISSIONS, views } from "utils/dbUISettings";
 
 export const currentDbViewAtom = atom<DbView>("table");
 
@@ -14,6 +13,7 @@ interface Props {
 
 export const DbViewSelector = ({ currentView }: Props) => {
   const { t } = useTranslation();
+  const { sourceLanguage: lang } = useDbQueryParams();
 
   const { asPath, push } = useRouter();
   const setCurrentDbView = useSetAtom(currentDbViewAtom);
@@ -37,11 +37,17 @@ export const DbViewSelector = ({ currentView }: Props) => {
           handleChange(e as React.ChangeEvent<{ value: DbView }>)
         }
       >
-        {VIEWS.map((view) => (
-          <MenuItem key={view} value={view}>
-            {t(`common:dbViewSelector.${view}`)}
-          </MenuItem>
-        ))}
+        {views.map((view) => {
+          if (VIEW_CONTEXT_OMISSIONS[view]?.includes(lang)) {
+            return null;
+          }
+
+          return (
+            <MenuItem key={view} value={view}>
+              {t(`common:dbViewSelector.${view}`)}
+            </MenuItem>
+          );
+        })}
       </Select>
     </FormControl>
   );

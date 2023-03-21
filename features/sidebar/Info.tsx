@@ -1,7 +1,7 @@
 import { Typography } from "@mui/material";
-import type { DbView } from "features/sidebar/settingComponents/DbViewSelector";
 import { currentDbViewAtom } from "features/sidebar/settingComponents/DbViewSelector";
 import { useAtomValue } from "jotai";
+import type { DbView } from "utils/dbUISettings";
 
 // TODO: Determine relevant support info for sub-components & add to local files.
 const TEMP_VIEW_INFO: Record<DbView, string> = {

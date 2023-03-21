@@ -5,6 +5,7 @@ import { getParallelDownloadData } from "./downloads";
 import { getExternalLinksData } from "./externalLinks";
 import { getGraphData } from "./graph";
 import { getLanguageMenuData } from "./languageMenu";
+import { getNumbersData } from "./numbers";
 import { getSourceTextCollections } from "./sidebarSourceTexts";
 import { getTableData } from "./table";
 import { getCategoryMenuItems, getTextMenuItems } from "./textLists";
@@ -21,6 +22,10 @@ export const DbApi = {
   GraphView: {
     makeQueryKey: (fileName: string) => ["graphView", fileName],
     call: getGraphData,
+  },
+  NumbersView: {
+    makeQueryKey: (fileName: string) => ["graphView", fileName],
+    call: getNumbersData,
   },
   TableView: {
     makeQueryKey: (fileName: string) => ["tableView", fileName],
