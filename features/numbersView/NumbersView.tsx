@@ -19,6 +19,7 @@ interface Props {
   onStartReached: () => void;
 }
 
+// TODO
 // const Footer = () => {
 //   return (
 //     <div
