@@ -17,17 +17,9 @@ interface TableData {
   [key: string]: string[] | string;
 }
 
-// export interface NumbersPageData {
-//   headers: (TableDataHeader | { segmentnr: "i18nKey" })[];
-//   rows: (TableDataRow | { segmentnr: string })[];
-// }
 export type NumbersPageData = TableData[];
 
 function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
-  /* const numbersData: NumbersPageData = {
-    headers: [{ segmentnr: "i18nKey" }],
-    rows: [],
-  }; */
   const numbersData = [];
 
   const headerRow: TableData[] = [{ segmentnr: "i18nKey" }];
@@ -40,13 +32,15 @@ function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
         headerRow.push(collection);
       }
 
-      const [key] = Object.keys(collection);
+      const [column] = Object.keys(collection);
 
-      const isChn = /^[A-Z]/.exec(key);
-      const idSeparator = isChn ? "n" : "/d/";
+      const isChn = /^[A-Z]/.exec(column);
+      const idSeparator = isChn ? "n" : new RegExp(/\d/);
 
       const parallels = segment.parallels.flat();
-      row[key] = parallels.filter((p) => p.split(idSeparator)[0] === key);
+      row[column] = parallels.filter((p) => {
+        return p.split(idSeparator)[0] === column;
+      });
     }
 
     if (i === 0) {
