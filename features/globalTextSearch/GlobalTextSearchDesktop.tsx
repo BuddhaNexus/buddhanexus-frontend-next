@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
 import SearchIcon from "@mui/icons-material/Search";
@@ -9,11 +9,11 @@ import { styled } from "@mui/material/styles";
 import TextField from "@mui/material/TextField";
 
 interface SearchBoxWrapperProps extends BoxProps {
-  animation: string;
+  isOpen: boolean;
 }
 
 const SearchBoxWrapper = styled("form")<SearchBoxWrapperProps>(
-  ({ theme, animation }) => ({
+  ({ theme, isOpen }) => ({
     position: "absolute",
     top: "-4px",
     left: "48px",
@@ -24,28 +24,12 @@ const SearchBoxWrapper = styled("form")<SearchBoxWrapperProps>(
     "&:hover": {
       backgroundColor: theme.palette.grey[200],
     },
-    animation: `${animation} 0.2s ease-in-out forwards`,
-    width: "0%",
-    "@keyframes growFromLeftToRight": {
-      "0%": {
-        width: "0%",
-        padding: "0px",
-      },
-      "100%": {
-        width: "calc(100% - 42px)",
-        padding: "0px 15px",
-      },
-    },
-    "@keyframes shrinkFromRightToLeft": {
-      "0%": {
-        width: "calc(100% - 42px)",
-        padding: "0px 15px",
-      },
-      "100%": {
-        width: "0%",
-        padding: "0px",
-      },
-    },
+    width: "calc(100% - 42px)",
+    transform: `scaleX(${isOpen ? 1 : 0})`,
+    transformOrigin: "left",
+    opacity: `${isOpen ? 1 : 0}`,
+    transition: "transform 200ms, opacity 100ms",
+    overflow: "hidden",
   })
 );
 
@@ -73,28 +57,12 @@ const SearchBoxInput = styled(TextField)({
 
 const GlobalTextSearchDesktop = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [animation, setAnimation] = useState("none");
   const inputRef = useRef<HTMLInputElement>(null);
   const [searchText, setSearchText] = useState("");
 
-  useEffect(() => {
-    if (isOpen) {
-      setAnimation("growFromLeftToRight");
-      inputRef.current?.focus();
-    } else if (!isOpen && animation !== "none") {
-      setAnimation("shrinkFromRightToLeft");
-
-      const timeoutId = setTimeout(() => {
-        setSearchText("");
-        setAnimation("none");
-      }, 300);
-
-      return () => clearTimeout(timeoutId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  const handleSearchIconlick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSearchIconClick = (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
     setIsOpen((open) => !open);
   };
@@ -119,14 +87,15 @@ const GlobalTextSearchDesktop = () => {
         width: `calc(100% - 288px)`,
       }}
     >
-      <IconButton color="inherit" onClick={handleSearchIconlick}>
+      <IconButton color="inherit" onClick={handleSearchIconClick}>
         {isOpen ? (
           <CloseIcon sx={{ fontSize: 28 }} />
         ) : (
           <SearchIcon sx={{ fontSize: 28 }} />
         )}
       </IconButton>
-      <SearchBoxWrapper animation={animation}>
+
+      <SearchBoxWrapper isOpen={isOpen}>
         <SearchBoxInput
           inputRef={inputRef}
           placeholder="Search..."
