@@ -73,10 +73,13 @@ export default function SortOption() {
             {SORT_OPTIONS.map((option) => {
               const [keyValue] = Object.entries(option);
               const [key, value] = keyValue;
+              // IGNORE: resolved in feature branch
               return (
-                <MenuItem key={key} value={key}>
-                  {t(`optionsLabels.${value}`)}
-                </MenuItem>
+                <>
+                 {/* <MenuItem key={key} value={key}>
+                   {t(`optionsLabels.${value}`)}
+                 </MenuItem> */}
+                </>
               );
             })}
           </Select>
