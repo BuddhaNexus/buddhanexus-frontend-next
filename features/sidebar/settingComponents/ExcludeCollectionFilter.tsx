@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
-import { useTextLists } from "@components/hooks/useTextLists";
+import { useDbMenus } from "@components/hooks/useDbMenus";
 import { Autocomplete, Box, CircularProgress, TextField } from "@mui/material";
 import { DEFAULT_QUERY_PARAMS } from "features/sidebar/common/dbSidebarSettings";
 import {
@@ -8,12 +8,12 @@ import {
   StyledPopper,
 } from "features/sidebar/common/textMenuSubComponents";
 import { ArrayParam, useQueryParam } from "use-query-params";
-import type { CategoryMenuItem } from "utils/api/textLists";
+import type { CategoryMenuItem } from "types/api/menus";
 
 const ExcludeCollectionFilter = () => {
   const { t } = useTranslation("settings");
 
-  const { categories, isLoadingCategories } = useTextLists();
+  const { categories, isLoadingCategories } = useDbMenus();
 
   const [excludeCollectionParam, setExcludeCollectionParam] = useQueryParam(
     // TODO: replace with "exclude_collection",

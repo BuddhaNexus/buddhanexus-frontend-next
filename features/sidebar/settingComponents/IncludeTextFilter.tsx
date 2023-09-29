@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "next-i18next";
-import { useTextLists } from "@components/hooks/useTextLists";
+import { useDbMenus } from "@components/hooks/useDbMenus";
 import { Autocomplete, Box, CircularProgress, TextField } from "@mui/material";
 import { DEFAULT_QUERY_PARAMS } from "features/sidebar/common/dbSidebarSettings";
 import {
@@ -8,12 +8,12 @@ import {
   StyledPopper,
 } from "features/sidebar/common/textMenuSubComponents";
 import { ArrayParam, useQueryParam } from "use-query-params";
-import type { TextMenuItem } from "utils/api/textLists";
+import type { DatabaseText } from "types/api/menus";
 
 const IncludeTextFilter = () => {
   const { t } = useTranslation("settings");
 
-  const { texts, isLoadingTexts } = useTextLists();
+  const { texts, isLoadingTexts } = useDbMenus();
 
   const [includeTextParam, setIncludeTextParam] = useQueryParam(
     // TODO: replace with "include_text",
@@ -21,7 +21,7 @@ const IncludeTextFilter = () => {
     ArrayParam
   );
 
-  const [includeTextValue, setIncludeTextValue] = useState<TextMenuItem[]>([]);
+  const [includeTextValue, setIncludeTextValue] = useState<DatabaseText[]>([]);
 
   useEffect(
     () =>
@@ -31,7 +31,7 @@ const IncludeTextFilter = () => {
     [includeTextParam, setIncludeTextParam]
   );
 
-  const handleInputChange = (value: TextMenuItem[]) => {
+  const handleInputChange = (value: DatabaseText[]) => {
     setIncludeTextValue(value);
     setIncludeTextParam(() => {
       return value.map((item) => item.id);
@@ -47,7 +47,8 @@ const IncludeTextFilter = () => {
         value={includeTextValue ?? []}
         PopperComponent={StyledPopper}
         ListboxComponent={ListboxComponent}
-        options={[...texts.values()]}
+        // options={[...texts.values()]}
+        options={[]}
         getOptionLabel={(option) => option.name.toUpperCase()}
         renderInput={(params) => (
           <TextField

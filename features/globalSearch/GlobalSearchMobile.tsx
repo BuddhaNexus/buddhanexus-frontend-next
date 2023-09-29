@@ -1,6 +1,5 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { globalSearchTermAtom } from "pages/search";
 import { Link } from "@components/common/Link";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
@@ -16,7 +15,7 @@ import { handleSearchInputEnterPress } from "./globalSearchUtils";
 
 const GlobalSearchMobile = () => {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useAtom(globalSearchTermAtom);
+  const [searchTerm, setSearchTerm] = React.useState("IN DEVELOPMENT ON FEATURE BRANCH");
 
   return (
     <Box
