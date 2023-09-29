@@ -60,14 +60,16 @@ export default function NumbersPage() {
       {isLoading ? (
         <CenteredProgress />
       ) : (
-        data?.collections[0].map((collection) => {
-          const [[collectionId, collectionName]] = Object.entries(collection);
-          return (
-            <Typography key={collectionId}>
-              {collectionId}: {collectionName}
-            </Typography>
-          );
-        })
+        <>
+          {/* data?.collections[0].map((collection) => {
+           const [[collectionId, collectionName]] = Object.entries(collection);
+           return (
+             <Typography key={collectionId}>
+               {collectionId}: {collectionName}
+             </Typography>
+           );
+         }) */}
+        </>
       )}
       <SourceTextBrowserDrawer />
     </PageContainer>
