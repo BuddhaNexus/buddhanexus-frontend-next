@@ -1,7 +1,9 @@
-/* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import type { PagedResponse } from "types/api/common";
-
-import { API_ROOT_URL } from "./constants";
+import apiClient from "@api";
+import type {
+  ApiNumbersPageData,
+  InfiniteFilePropApiQuery,
+  PagedResponse,
+} from "types/api/common";
 
 interface Segment {
   segmentnr: string;
@@ -9,16 +11,15 @@ interface Segment {
 }
 
 export interface ApiSegmentsData {
-  collections: { [key: string]: string }[][];
+  collections: Record<string, string>[][];
   segments: Segment[];
 }
 
-interface TableData {
-  [key: string]: string[] | string;
-}
+type TableData = Record<string, string[] | string>;
 
 export type NumbersPageData = TableData[];
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
   const numbersData = [];
 
@@ -34,11 +35,11 @@ function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
 
       const [column] = Object.keys(collection);
 
-      const isChn = /^[A-Z]/.exec(column);
+      const isChn = /^[A-Z]/.exec(column!);
       const idSeparator = isChn ? "n" : new RegExp(/\d/);
 
       const parallels = segment.parallels.flat();
-      row[column] = parallels.filter((p) => {
+      row[column!] = parallels.filter((p) => {
         return p.split(idSeparator)[0] === column;
       });
     }
@@ -55,18 +56,17 @@ function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
 
 export async function getNumbersData({
   fileName,
+  queryParams,
   pageNumber,
-  serializedParams,
-}: {
-  fileName: string;
-  pageNumber: number;
-  serializedParams: string;
-}): Promise<PagedResponse<NumbersPageData>> {
-  // TODO: remove co_occ param after backend update
-  const res = await fetch(
-    `${API_ROOT_URL}/files/${fileName}/segments?page=${pageNumber}&co_occ=2000&${serializedParams}`
-  );
+}: InfiniteFilePropApiQuery): Promise<PagedResponse<ApiNumbersPageData>> {
+  const limits = queryParams?.limits
+    ? JSON.parse(queryParams.limits as string)
+    : {};
 
-  const responseJSON = await res.json();
-  return { data: parseApiSegmentsData(responseJSON), pageNumber };
+  const { data } = await apiClient.POST("/numbers-view/numbers", {
+    body: { file_name: fileName, ...queryParams, limits, page: pageNumber },
+  });
+  // TODO: - remove type casting once response model is added to api
+  // - add page prop
+  return { data: data as ApiNumbersPageData, pageNumber };
 }

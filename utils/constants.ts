@@ -1,4 +1,4 @@
-export const enum SourceLanguage {
+export enum SourceLanguage {
   PALI = "pli",
   CHINESE = "chn",
   TIBETAN = "tib",
@@ -14,7 +14,3 @@ export const SOURCE_LANGUAGES = [
 
 // i18n
 export const ALL_LOCALES = ["en", "de"];
-
-// TODO: FIND MORE ROBUST SOLUTION
-export const SETTING_SIDEBAR_PATHS_REGEX =
-  /\/db\/.*?\/(table|numbers|graph|text)/;

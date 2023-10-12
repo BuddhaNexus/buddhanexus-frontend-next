@@ -8,8 +8,9 @@ import type { ListChildComponentProps } from "react-window";
 import { VariableSizeList } from "react-window";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { getTableViewUrl } from "@components/common/utils";
+import { getTextPath } from "@components/common/utils";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
+import { currentViewAtom } from "@components/hooks/useDbView";
 import {
   Autocomplete,
   autocompleteClasses,
@@ -24,8 +25,9 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/styles";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import type { DatabaseText } from "types/api/menus";
 import { DbApi } from "utils/api/dbApi";
-import type { DatabaseText } from "utils/api/textLists";
 
 const OuterElementContext = React.createContext({});
 
@@ -109,13 +111,12 @@ const ListboxComponent = React.forwardRef<
   React.HTMLAttributes<HTMLElement>
 >(function ListboxComponent(props, ref) {
   const { children, ...other } = props;
-  const itemData: React.ReactChild[] = [];
-  // eslint-disable-next-line unicorn/no-array-for-each
-  (children as React.ReactChild[]).forEach(
-    (item: React.ReactChild & { children?: React.ReactChild[] }) => {
-      itemData.push(item, ...(item.children ?? []));
+  const itemData: React.ReactNode[] = [];
+  (children as any[]).forEach((item) => {
+    if (item) {
+      itemData.push(item, ...item.children);
     }
-  );
+  });
 
   const theme = useTheme();
   const smUp = useMediaQuery(theme.breakpoints.up("sm"), {
@@ -124,9 +125,9 @@ const ListboxComponent = React.forwardRef<
   const itemCount = itemData.length;
   const itemSize = smUp ? 36 : 48;
 
-  const getChildSize = (child: React.ReactChild) => {
+  const getChildSize = (child: React.ReactNode) => {
     // eslint-disable-next-line no-prototype-builtins
-    if (child.hasOwnProperty("group")) {
+    if (child?.hasOwnProperty("group")) {
       return 48;
     }
 
@@ -177,15 +178,14 @@ const StyledPopper = styled(Popper)({
 });
 
 export const SourceTextSearchInput = () => {
-  const { sourceLanguage } = useDbQueryParams();
-
-  const router = useRouter();
-
   const { t } = useTranslation();
+  const router = useRouter();
+  const { sourceLanguage, queryParams } = useDbQueryParams();
+  const dbView = useAtomValue(currentViewAtom);
 
   const { data, isLoading } = useQuery<DatabaseText[]>({
-    queryKey: DbApi.LanguageMenu.makeQueryKey(sourceLanguage),
-    queryFn: () => DbApi.LanguageMenu.call(sourceLanguage),
+    queryKey: DbApi.SourceTextMenu.makeQueryKey(sourceLanguage),
+    queryFn: () => DbApi.SourceTextMenu.call(sourceLanguage),
   });
 
   // TODO: Add pagination and fuzzy search on BE
@@ -219,9 +219,15 @@ export const SourceTextSearchInput = () => {
       disableListWrap
       disablePortal
       onChange={(target, value) =>
-        router.push(
-          getTableViewUrl({ sourceLanguage, fileName: value?.fileName })
-        )
+        router.push({
+          pathname: getTextPath({
+            sourceLanguage,
+            fileName: value?.fileName,
+            dbView,
+          }),
+          //  TODO: per previous spec descision, confirm whether query params should persist accross file changes, or should be reset on file change. Remove `query` prop for reset.
+          query: queryParams,
+        })
       }
     />
   );

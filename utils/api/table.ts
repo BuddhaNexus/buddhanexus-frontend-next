@@ -1,11 +1,9 @@
-import type { PagedResponse } from "types/api/common";
+import apiClient from "@api";
+import type { InfiniteFilePropApiQuery, PagedResponse } from "types/api/common";
 import type { ApiTablePageData, TablePageData } from "types/api/table";
-
-import { API_ROOT_URL } from "./constants";
 
 function parseAPITableData(apiData: ApiTablePageData): TablePageData {
   return apiData.map((p) => ({
-    coOccurrences: p["co-occ"],
     sourceLanguage: p.src_lang,
     targetLanguage: p.tgt_lang,
     fileName: p.file_name,
@@ -36,17 +34,27 @@ function parseAPITableData(apiData: ApiTablePageData): TablePageData {
 
 export async function getTableData({
   fileName,
+  queryParams,
   pageNumber,
-  serializedParams,
-}: {
-  fileName: string;
-  pageNumber: number;
-  serializedParams: string;
-}): Promise<PagedResponse<TablePageData>> {
-  // TODO: remove co_occ param after backend update
-  const res = await fetch(
-    `${API_ROOT_URL}/files/${fileName}/table?page=${pageNumber}&co_occ=2000&${serializedParams}`
-  );
-  const responseJSON = await res.json();
-  return { data: parseAPITableData(responseJSON), pageNumber };
+}: InfiniteFilePropApiQuery): Promise<PagedResponse<TablePageData>> {
+  const { data } = await apiClient.POST("/table-view/table", {
+    // body: {
+    //   file_name: fileName,
+    //   ...queryParams,
+    //   limits,
+    //   page: pageNumber,
+    // },
+    // TODO: - This is a temporary fix to enable work elsehwere. Check `getStaticPaths` functionality post BE update
+    body: {
+      file_name: fileName,
+      score: 30,
+      par_length: 30,
+      sort_method: "position",
+      ...queryParams,
+      limits: JSON.parse(queryParams.limits as string) ?? {},
+      page: pageNumber,
+    },
+  });
+  // TODO: - remove type casting once response model is added to api
+  return { data: parseAPITableData(data as ApiTablePageData), pageNumber };
 }

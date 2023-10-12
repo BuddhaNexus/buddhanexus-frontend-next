@@ -1,84 +1,64 @@
-import { useMemo } from "react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
-import { useAtomValue } from "jotai";
-import _debounce from "lodash/debounce";
-import queryString from "query-string";
-import {
-  ArrayParam,
-  NumberParam,
-  StringParam,
-  useQueryParams,
-} from "use-query-params";
-import type { SourceLanguage } from "utils/constants";
+import { useSearchParams } from "@components/hooks/useTypedSearchParams";
+import { getQueryParamsFromRouter } from "features/sidebarSuite/common/dbSidebarHelpers";
 import {
   DEFAULT_PAR_LENGTH_VALUES,
-  DEFAULT_QUERY_PARAMS,
-  scoreFilterValueAtom,
-} from "utils/dbUISettings";
-
-const queryConfig = {
-  score: NumberParam,
-  par_length: NumberParam,
-  limit_collection: ArrayParam,
-  target_collection: StringParam,
-  folio: StringParam,
-  sort_method: StringParam,
-};
+  DEFAULT_QUERY_PARAMS_VALUES,
+  MIN_PAR_LENGTH_VALUES,
+  SETTINGS_OMISSIONS_CONFIG,
+} from "features/sidebarSuite/config";
+import {
+  settingRenderGroups,
+  uniqueSettings,
+} from "features/sidebarSuite/config/settings";
+import type { SourceLanguage } from "utils/constants";
 
 export const useDbQueryParams = () => {
-  const { query, asPath } = useRouter();
   const { t } = useTranslation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
 
-  const sourceLanguage = query.language as SourceLanguage;
+  const { file, language } = router.query;
+
+  const sourceLanguage = language as SourceLanguage;
   const sourceLanguageName = t(`language.${sourceLanguage}`);
-  const fileName = query.file as string;
+  const fileName = file as string;
 
-  const urlHasParams = asPath.includes("?");
-
-  const [queryParams, setQueryParams] = useQueryParams(queryConfig);
+  const queryParams = getQueryParamsFromRouter({ route: router.route, params });
 
   const defaultQueryParams = {
-    ...DEFAULT_QUERY_PARAMS,
-    par_length: DEFAULT_PAR_LENGTH_VALUES[sourceLanguage],
+    score: DEFAULT_QUERY_PARAMS_VALUES.score,
+    par_length: sourceLanguage
+      ? DEFAULT_PAR_LENGTH_VALUES[sourceLanguage]
+      : DEFAULT_QUERY_PARAMS_VALUES.par_length,
   };
 
-  const scoreFilterValue = useAtomValue(scoreFilterValueAtom);
+  // Chinese is used as fallback min par length as it has the lowest min par length value.
+  const parLengthConfig = {
+    default: sourceLanguage
+      ? DEFAULT_PAR_LENGTH_VALUES[sourceLanguage]
+      : DEFAULT_QUERY_PARAMS_VALUES.par_length,
+    min: sourceLanguage
+      ? MIN_PAR_LENGTH_VALUES[sourceLanguage]
+      : MIN_PAR_LENGTH_VALUES.chn,
+  };
 
-  const setDebouncedQueryParam = useMemo(
-    () =>
-      _debounce((param: string, value: number) => {
-        const requiredQueryParams = {
-          score: queryParams.score ?? scoreFilterValue,
-          par_length:
-            queryParams.par_length ?? DEFAULT_PAR_LENGTH_VALUES[sourceLanguage],
-        };
-
-        setQueryParams({
-          ...requiredQueryParams,
-          [param]: value,
-        });
-      }, 600),
-    [
-      queryParams.score,
-      queryParams.par_length,
-      scoreFilterValue,
-      sourceLanguage,
-      setQueryParams,
-    ]
-  );
-
-  const serializedParams = queryString.stringify(queryParams);
+  const sortParam = queryParams.get(uniqueSettings.queryParams.sortMethod);
+  const sortMethodSelectConfig = sortParam ?? "position";
 
   return {
     sourceLanguage,
     sourceLanguageName,
     fileName,
-    urlHasParams,
-    queryParams,
-    setQueryParams,
-    setDebouncedQueryParam,
-    serializedParams,
+    queryParams: Object.fromEntries(queryParams.entries()),
     defaultQueryParams,
+    defaultParamConfig: DEFAULT_QUERY_PARAMS_VALUES,
+    parLengthConfig,
+    sortMethodSelectConfig,
+    settingRenderGroups,
+    uniqueSettings,
+    settingsOmissionsConfig: SETTINGS_OMISSIONS_CONFIG,
   };
 };

@@ -1,9 +1,12 @@
+import type { DbViewEnum } from "@components/hooks/useDbView";
+import type { QueryParams } from "features/sidebarSuite/config/types";
+
 export interface ApiGraphPageData {
   histogramgraphdata: [name: string, count: number][];
   piegraphdata: [name: string, count: number][];
 }
 
-export interface ApiSegmentsData {
+export interface ApiNumbersPageData {
   collections: Record<string, string>[][];
   segments: { parallels: string[][]; segmentnr: string }[];
 }
@@ -13,3 +16,26 @@ export interface APIResponse<T> {
 }
 
 export type PagedResponse<T> = { pageNumber: number; data: T };
+
+export type Params = Partial<QueryParams>;
+
+export interface FilePropApiQuery {
+  fileName: string;
+  queryParams: Params;
+}
+
+export interface InfiniteFilePropApiQuery {
+  fileName: string;
+  queryParams: Params;
+  pageNumber: number;
+}
+
+export interface InfiniteSerachApiQuery {
+  searchTerm: string;
+  queryParams: Params;
+  pageNumber: number;
+}
+
+export interface ViewPropApiQuery extends FilePropApiQuery {
+  view: DbViewEnum;
+}

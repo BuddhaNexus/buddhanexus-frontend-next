@@ -1,50 +1,71 @@
+import type { FilePropApiQuery, Params } from "types/api/common";
 import type { SourceLanguage } from "utils/constants";
 
-import { getFolios, getParallelCount, getSegmentsData } from "./common";
 import { getParallelDownloadData } from "./downloads";
-import { getExternalLinksData } from "./externalLinks";
 import { getGraphData } from "./graph";
-import { getLanguageMenuData } from "./languageMenu";
+import { getExternalLinksData } from "./links";
+import {
+  getCategoryMenuData,
+  getSourceTextCollections,
+  getSourceTextMenuData,
+} from "./menus";
 import { getNumbersData } from "./numbers";
-import { getSourceTextCollections } from "./sidebarSourceTexts";
+import { getGlobalSearchData } from "./search";
 import { getTableData } from "./table";
-import { getCategoryMenuItems, getTextMenuItems } from "./textLists";
+import { getFolios, getParallelCount } from "./utils";
 
 export const DbApi = {
-  LanguageMenu: {
-    makeQueryKey: (language: SourceLanguage) => ["languageMenuData", language],
-    call: getLanguageMenuData,
-  },
-  SidebarSourceTexts: {
-    makeQueryKey: (language: SourceLanguage) => ["textCollections", language],
-    call: getSourceTextCollections,
-  },
+  //* VIEWS
   GraphView: {
-    makeQueryKey: (fileName: string) => ["graphView", fileName],
+    makeQueryKey: ({ fileName, queryParams }: FilePropApiQuery) => [
+      "graphView",
+      fileName,
+      queryParams,
+    ],
     call: getGraphData,
   },
-  NumbersView: {
-    makeQueryKey: (fileName: string) => ["graphView", fileName],
-    call: getNumbersData,
-  },
   TableView: {
-    makeQueryKey: (fileName: string) => ["tableView", fileName],
+    makeQueryKey: ({ fileName, queryParams }: FilePropApiQuery) => [
+      "tableView",
+      fileName,
+      queryParams,
+    ],
     call: getTableData,
   },
-  SegmentsData: {
-    makeQueryKey: (fileName: string) => ["segmentsData", fileName],
-    call: getSegmentsData,
+  NumbersView: {
+    makeQueryKey: ({ fileName, queryParams }: FilePropApiQuery) => [
+      "numbersView",
+      fileName,
+      queryParams,
+    ],
+    call: getNumbersData,
   },
-  TextMenu: {
-    makeQueryKey: (language: SourceLanguage) => ["textMenu", language],
-    call: getTextMenuItems,
+  //* MENUS
+  SourceTextMenu: {
+    makeQueryKey: (language: SourceLanguage) => [
+      "sourceTextMenuData",
+      language,
+    ],
+    call: getSourceTextMenuData,
   },
   CategoryMenu: {
-    makeQueryKey: (language: SourceLanguage) => ["categoryMenu", language],
-    call: getCategoryMenuItems,
+    makeQueryKey: (language: SourceLanguage) => ["categoryMenuData", language],
+    call: getCategoryMenuData,
   },
+  SidebarSourceTexts: {
+    makeQueryKey: (language: SourceLanguage) => [
+      "textCollectionsData",
+      language,
+    ],
+    call: getSourceTextCollections,
+  },
+  //* UTILS / SETTINGS
   ParallelCount: {
-    makeQueryKey: (fileName: string) => ["parallelCount", fileName],
+    makeQueryKey: ({ fileName, queryParams }: FilePropApiQuery) => [
+      "parallelCountData",
+      fileName,
+      queryParams,
+    ],
     call: getParallelCount,
   },
   FolioData: {
@@ -56,7 +77,21 @@ export const DbApi = {
     call: getExternalLinksData,
   },
   DownloadResults: {
-    makeQueryKey: (fileName: string) => ["downloadData", fileName],
+    makeQueryKey: ({ fileName, queryParams }: FilePropApiQuery) => [
+      "downloadData",
+      fileName,
+      queryParams,
+    ],
     call: getParallelDownloadData,
+  },
+  GlobalSearchData: {
+    makeQueryKey: ({
+      searchTerm,
+      queryParams,
+    }: {
+      searchTerm: string;
+      queryParams: Params;
+    }) => ["globalSearchData", searchTerm, queryParams],
+    call: getGlobalSearchData,
   },
 };

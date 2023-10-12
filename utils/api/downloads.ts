@@ -1,36 +1,32 @@
-import type { DbView } from "utils/dbUISettings";
+import apiClient from "@api";
+import type { ViewPropApiQuery } from "types/api/common";
 
-// import { API_ROOT_URL, RESULTS_DOWNLOAD_ROOT_URL } from "./constants";
-import { API_ROOT_URL } from "./constants";
+import { RESULTS_DOWNLOAD_ROOT_URL } from "./constants";
 
-interface ApiDownloadProps {
-  fileName: string;
-  serializedParams: string;
-  view: DbView;
-}
+// TODO: Awaiting api endpoint fix - remove eslint-disable-line on completion
 
-const apiDownloadViews = ["numbers", "table"];
-
-// example response: download/dn2_download.xlsx
 export async function getParallelDownloadData({
   fileName,
-  serializedParams,
-  view,
-}: ApiDownloadProps): Promise<{ url: string; name: string } | undefined> {
-  if (!apiDownloadViews.includes(view)) {
-    return;
-  }
+  queryParams,
+}: ViewPropApiQuery): Promise<{ url: string; name: string } | undefined> {
+  // this triggers the creation of an excel sheet of the data for the current view (table & number only) for the user to download. The sheet is generated on the backend and lives in a folder on the HDD of the server for a while and gets removed after a few days.
 
-  const res = await fetch(
-    `${API_ROOT_URL}/files/${fileName}/tabledownload?co_occ=2000&${serializedParams}&download_data=${view}`
-  );
-  const response = await res.json();
+  const limits = queryParams?.limits
+    ? JSON.parse(queryParams.limits as string)
+    : {};
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  const path = await apiClient.POST("/table-view/download", {
+    body: { file_name: fileName, ...queryParams, limits, download_data: "" },
+  });
 
-  // const url = `${RESULTS_DOWNLOAD_ROOT_URL}/${response}`;
-  const url = `https://buddhanexus.net/${response}`;
-  const name = `BuddhaNexus_${fileName}_${new Date()
+  // example path: download/dn2_download.xlsx
+  const url = `${RESULTS_DOWNLOAD_ROOT_URL}/`;
+  // const url = `${RESULTS_DOWNLOAD_ROOT_URL}/${path}`;
+
+  // Creates a unique, timestamped file name to avoid overwriting existing files on the user's computer.
+  const name = `BuddhaNexus_${fileName}_${new Date()!
     .toISOString()
-    .split(".")[0]
+    .replace(/\.\w+$/, "")
     .replace(/T/, "_")
     .replace(/:/g, "-")}.xlsx`;
 

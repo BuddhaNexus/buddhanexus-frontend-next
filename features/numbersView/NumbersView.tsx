@@ -11,10 +11,11 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import type { NumbersPageData } from "utils/api/numbers";
+// import type { NumbersPageData } from "utils/api/numbers";
 
 interface Props {
-  data: NumbersPageData;
+  data: any;
+  // data: NumbersPageData;
   onEndReached: () => void;
   onStartReached: () => void;
 }
@@ -62,7 +63,7 @@ export default function NumbersView({
       overscan={20}
       fixedHeaderContent={() => {
         const headerRow = React.Children.toArray(
-          headers.map((item) => {
+          headers.map((item: any) => {
             return Object.entries(item).map(([id, value]) => {
               return id === "segmentnr" ? (
                 <TableCell style={{ background: "white" }}>
@@ -86,7 +87,7 @@ export default function NumbersView({
         const row = React.Children.toArray(
           Object.entries(parallel).map(([id, value]) => {
             if (id === "segmentnr") {
-              return <TableCell>{value}</TableCell>;
+              return <TableCell>value</TableCell>;
             }
             return Array.isArray(value) && value.length > 0 ? (
               <TableCell key={id}>
