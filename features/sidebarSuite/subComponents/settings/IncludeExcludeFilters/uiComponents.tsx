@@ -137,11 +137,14 @@ export const ListboxComponent = React.forwardRef<
   return (
     <div ref={ref}>
       <OuterElementContext.Provider value={other}>
+        {/* TODO: replace react-window with newer package */}
+        {/* @ts-expect-error type issue */}
         <VariableSizeList
           ref={gridRef}
           itemData={itemData}
           height={getHeight() + 2 * LISTBOX_PADDING}
           width="100%"
+          // @ts-expect-error type issue
           outerElementType={OuterElementType}
           innerElementType="ul"
           itemSize={(index: number) => getChildSize(itemData[index] ?? 0)}
