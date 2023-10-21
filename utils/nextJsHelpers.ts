@@ -32,9 +32,7 @@ export const getI18NextStaticProps: (
   return {
     props: {
       ...(await serverSideTranslations(locale ?? "en", [
-        // @ts-expect-error type issues here
         "common",
-        // @ts-expect-error type issues here
         ...extraNamespaces,
       ])),
     },

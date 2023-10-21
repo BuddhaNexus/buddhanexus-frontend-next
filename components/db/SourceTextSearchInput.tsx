@@ -197,6 +197,7 @@ export const SourceTextSearchInput = () => {
       options={data ?? []}
       groupBy={(option) => option.category.toUpperCase()}
       renderInput={(params) => (
+        // @ts-expect-error type issue
         <TextField
           {...params}
           label={t("db.searchInputPlaceholder")}
@@ -225,7 +226,7 @@ export const SourceTextSearchInput = () => {
             fileName: value?.fileName,
             dbView,
           }),
-          //  TODO: per previous spec descision, confirm whether query params should persist accross file changes, or should be reset on file change. Remove `query` prop for reset.
+          //  TODO: per previous spec decision, confirm whether query params should persist accross file changes, or should be reset on file change. Remove `query` prop for reset.
           query: queryParams,
         })
       }

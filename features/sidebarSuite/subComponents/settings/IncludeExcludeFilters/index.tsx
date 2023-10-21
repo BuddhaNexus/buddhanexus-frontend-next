@@ -89,6 +89,7 @@ const IncludeExcludeFilters = () => {
               options={options}
               getOptionLabel={(option) => option.name.toUpperCase()}
               renderInput={(params) => (
+                // @ts-expect-error type issue
                 <TextField
                   {...params}
                   label={t([`filtersLabels.${limit}`])}
