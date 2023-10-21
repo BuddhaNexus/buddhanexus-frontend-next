@@ -197,7 +197,6 @@ export const SourceTextSearchInput = () => {
       options={data ?? []}
       groupBy={(option) => option.category.toUpperCase()}
       renderInput={(params) => (
-        // @ts-expect-error type issue
         <TextField
           {...params}
           label={t("db.searchInputPlaceholder")}
