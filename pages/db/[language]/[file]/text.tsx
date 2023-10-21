@@ -42,15 +42,16 @@ export default function TextPage() {
 
   const { data, fetchNextPage, fetchPreviousPage, isInitialLoading, isError } =
     useInfiniteQuery<PagedResponse<TextPageData>>({
+      initialPageParam: 0,
       queryKey: DbApi.TextView.makeQueryKey({
         fileName,
         queryParams: paramsThatShouldRefreshText,
       }),
-      queryFn: ({ pageParam = 0 }) =>
+      queryFn: ({ pageParam }) =>
         DbApi.TextView.call({
           fileName,
           queryParams,
-          pageNumber: pageParam,
+          pageNumber: pageParam as number,
         }),
       getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
       getPreviousPageParam: (lastPage) =>

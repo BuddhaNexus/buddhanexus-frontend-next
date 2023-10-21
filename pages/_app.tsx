@@ -13,7 +13,7 @@ import type { EmotionCache } from "@emotion/react";
 import { CacheProvider } from "@emotion/react";
 import CssBaseline from "@mui/material/CssBaseline";
 import {
-  Hydrate,
+  HydrationBoundary,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
@@ -64,7 +64,7 @@ function MyApp({
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <Hydrate state={pageProps.dehydratedState}>
+          <HydrationBoundary state={pageProps.dehydratedState}>
             <DefaultSeo {...SEO} />
             <Head>
               <meta
@@ -80,7 +80,7 @@ function MyApp({
                 <Component {...pageProps} />
               </MUIThemeProvider>
             </ThemeProvider>
-          </Hydrate>
+          </HydrationBoundary>
           <ReactQueryDevtools />
         </QueryClientProvider>
       </QueryParamProvider>
