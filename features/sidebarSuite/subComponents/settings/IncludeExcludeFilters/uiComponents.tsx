@@ -107,7 +107,7 @@ export const ListboxComponent = React.forwardRef<
   (children as React.ReactChild[]).forEach(
     (item: React.ReactChild & { children?: React.ReactChild[] }) => {
       itemData.push(item, ...(item.children ?? []));
-    }
+    },
   );
 
   const itemCount = itemData.length;

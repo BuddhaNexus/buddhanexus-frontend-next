@@ -154,7 +154,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     {
       locale,
     },
-    ["settings"]
+    ["settings"],
   );
 
   return {

@@ -22,7 +22,7 @@ export function transformDataForTreeView(data: SourceTextBrowserData) {
           fileName,
           availableLanguages,
           dataType: NodeDataChildType.Text,
-        })
+        }),
       ),
     })),
   }));
