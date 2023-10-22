@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { atom, useSetAtom } from "jotai";
 
+// eslint-disable-next-line no-shadow
 export enum DbViewEnum {
   GRAPH = "graph",
   NUMBERS = "numbers",

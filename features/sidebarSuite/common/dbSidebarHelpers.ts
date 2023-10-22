@@ -13,7 +13,7 @@ import { getParallelDownloadData } from "utils/api/downloads";
 import { SourceLanguage } from "utils/constants";
 
 /**
- * Next JS stores dynamic routes in the router object query prop which is also where api query params are pushed to. Dynamic route params need to be removed to avoid polluting result page urls and sending unaccepted params in api requests.
+ * Next.js stores dynamic routes in the router object query prop which is also where api query params are pushed to. Dynamic route params need to be removed to avoid polluting result page urls and sending unaccepted params in api requests.
  *
  * @see {@link https://nextjs.org/docs/pages/api-reference/functions/use-router#router-object}.
  *
@@ -25,14 +25,14 @@ export const getQueryParamsFromRouter = ({
   route: string;
   params: URLSearchParams;
 }): URLSearchParams => {
-  const apiEndpointparams = new URLSearchParams(params);
-  apiEndpointparams.delete("file");
+  const apiEndpointParams = new URLSearchParams(params);
+  apiEndpointParams.delete("file");
 
   if (!route.startsWith("/search")) {
-    apiEndpointparams.delete("language");
+    apiEndpointParams.delete("language");
   }
 
-  return apiEndpointparams;
+  return apiEndpointParams;
 };
 
 export const isSettingOmitted = ({
@@ -51,15 +51,6 @@ export const isSettingOmitted = ({
       ["allLangs", language].includes(omittedLang)
     )
   );
-};
-
-type UtilityOptionProps = {
-  callback: (props: UtilityClickHandlerProps) => void;
-  icon: OverridableComponent<SvgIconTypeMap>;
-};
-
-export type UtilityOptions = {
-  [value in UtilityOption]: UtilityOptionProps;
 };
 
 export type PopperAnchorState = Record<UtilityOption, HTMLElement | null>;
@@ -81,6 +72,15 @@ interface UtilityClickHandlerProps {
   href: string;
   popperAnchorStateHandler: PopperAnchorStateHandler;
 }
+
+type UtilityOptionProps = {
+  callback: (props: UtilityClickHandlerProps) => void;
+  icon: OverridableComponent<SvgIconTypeMap>;
+};
+
+export type UtilityOptions = {
+  [value in UtilityOption]: UtilityOptionProps;
+};
 
 export const defaultAnchorEls = {
   download: null,

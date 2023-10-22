@@ -48,7 +48,7 @@ const IncludeExcludeFilters = () => {
     const otherLimitParams = Object.keys(otherLimits).reduce((params, key) => {
       return {
         ...params,
-        [key]: otherLimits?.[key as Limit]!.map((limit) => limit.id),
+        [key]: otherLimits?.[key as Limit]!.map((limitItem) => limitItem.id),
       };
     }, {});
     const updatedLimitValues =
@@ -56,7 +56,10 @@ const IncludeExcludeFilters = () => {
     setLimitsValue(updatedLimitValues);
     setLimitsParam(
       Object.keys(updatedLimitValues).length > 0
-        ? { ...otherLimitParams, [limit]: value.map((limit) => limit.id) }
+        ? {
+            ...otherLimitParams,
+            [limit]: value.map((limitItem) => limitItem.id),
+          }
         : undefined
     );
   };
