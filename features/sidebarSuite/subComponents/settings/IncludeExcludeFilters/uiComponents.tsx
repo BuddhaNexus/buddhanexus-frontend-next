@@ -89,7 +89,7 @@ const Row = (props: ListChildComponentProps) => {
           >
             {ref}
           </Typography>
-          {name.replace(/^•\s/g, "")}
+          {name.replaceAll(/^•\s/g, "")}
         </Typography>
       </div>
     </Box>
