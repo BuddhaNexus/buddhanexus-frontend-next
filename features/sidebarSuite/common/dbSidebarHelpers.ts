@@ -48,8 +48,8 @@ export const isSettingOmitted = ({
 }) => {
   return Boolean(
     omissions?.[settingName]?.[view]?.some((omittedLang) =>
-      ["allLangs", language].includes(omittedLang)
-    )
+      ["allLangs", language].includes(omittedLang),
+    ),
   );
 };
 
@@ -57,7 +57,7 @@ export type PopperAnchorState = Record<UtilityOption, HTMLElement | null>;
 
 type PopperUtilityStates<State> = [
   State,
-  React.Dispatch<React.SetStateAction<State>>
+  React.Dispatch<React.SetStateAction<State>>,
 ];
 type PopperAnchorStateHandler = PopperUtilityStates<PopperAnchorState>;
 

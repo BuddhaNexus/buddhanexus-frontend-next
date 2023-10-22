@@ -3,7 +3,7 @@ import { DbApi } from "utils/api/dbApi";
 import type { SourceLanguage } from "utils/constants";
 
 export async function prefetchSourceTextBrowserData(
-  sourceLanguage: SourceLanguage
+  sourceLanguage: SourceLanguage,
 ): Promise<QueryClient> {
   const queryClient = new QueryClient({
     // https://www.codemzy.com/blog/react-query-cachetime-staletime

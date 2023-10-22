@@ -45,7 +45,7 @@ export default function TablePage() {
 
   const allData = useMemo(
     () => (data ? data.pages.flatMap((page) => page.data) : []),
-    [data]
+    [data],
   );
 
   if (isFallback) {
@@ -82,11 +82,11 @@ export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
   const i18nProps = await getI18NextStaticProps({ locale }, ["settings"]);
 
   const queryClient = await prefetchSourceTextBrowserData(
-    params?.language as SourceLanguage
+    params?.language as SourceLanguage,
   );
 
   return merge(
     { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    i18nProps,
   );
 };

@@ -40,7 +40,7 @@ function MyApp({
     () =>
       new QueryClient({
         defaultOptions: { queries: { refetchOnWindowFocus: false } },
-      })
+      }),
   );
 
   return (

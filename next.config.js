@@ -15,7 +15,7 @@ const nextConfig = {
       config.plugins.push(
         new I18NextHMRPlugin({
           localesDir: path.resolve(__dirname, "public/locales"),
-        })
+        }),
       );
     }
     config.resolve.fallback = { fs: false, path: false };
