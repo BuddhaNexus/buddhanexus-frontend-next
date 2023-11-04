@@ -30,5 +30,15 @@ jobs:
           node-version: "18"
           cache: "yarn"
 
+      # TODO: determine where tests should be run. Dev server / Docker container / other?
+      - name: Start dev server
+        run: yarn dev & echo $! > .pidfile
+
+      - name: Delay
+        run: sleep 60s
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
+
+      - name: Stop dev server
+        run: kill $(cat .pidfile)
