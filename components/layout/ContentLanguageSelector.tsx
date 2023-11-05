@@ -31,6 +31,7 @@ export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
         "&:hover": { opacity: 0.8 },
         "&:active": { opacity: 1 },
       }}
+      data-testid="db-language-tile"
     >
       <Box
         component="img"

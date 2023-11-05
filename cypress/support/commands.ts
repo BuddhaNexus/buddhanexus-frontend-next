@@ -1,5 +1,4 @@
-/* eslint-disable unicorn/no-empty-file */
-// / <reference types="cypress" />
+/// <reference types="cypress" />
 // ***********************************************
 // This example commands.ts shows you how to
 // create various custom commands and overwrite
@@ -36,3 +35,18 @@
 //     }
 //   }
 // }
+
+Cypress.Commands.add("readDirectory", (directory: string) => {
+  return cy.task("readDirectory", directory);
+});
+
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      readDirectory(directory: string): Chainable<string[]>;
+    }
+  }
+}
+
+export {};

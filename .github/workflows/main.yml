@@ -28,7 +28,7 @@ jobs:
           if-no-files-found: error
           path: install
 
-  # TODO: This is an "in principle" implementation test (and a pre-merge-commit hook has been added to prevent merging this branch while under development).
+  # TODO: This is an "in principle" implementation test
   build-and-test:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'

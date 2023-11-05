@@ -61,6 +61,7 @@ export const AppTopBar = () => {
           zIndex: materialTheme.zIndex.drawer + 1,
           borderBottom: `1px solid ${materialTheme.palette.background.accent}`,
         }}
+        data-testid="app-bar"
       >
         <Toolbar>
           <Box
