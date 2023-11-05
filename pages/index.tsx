@@ -52,7 +52,7 @@ export default function Home() {
           },
         }}
       >
-        <Typography component="h1" sx={visuallyHidden} data-testid="h1">
+        <Typography component="h1" sx={visuallyHidden}>
           {t("global.siteTitle")}
         </Typography>
         <Typography
