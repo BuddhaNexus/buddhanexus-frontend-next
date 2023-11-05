@@ -21,19 +21,10 @@ jobs:
       - name: Run ESLint
         run: yarn eslint .
 
-      - name: Save install folder
-        uses: actions/upload-artifact@v3
-        with:
-          name: install
-          if-no-files-found: error
-          path: install
-
   # TODO: This is an "in principle" implementation test
   build-and-test:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    env:
-      CI: "true"
     needs: install
     steps:
       - uses: actions/checkout@v3
@@ -41,12 +32,6 @@ jobs:
         with:
           node-version: "18"
           cache: "yarn"
-
-      - name: Download the install folder
-        uses: actions/download-artifact@v3
-        with:
-          name: install
-          path: install
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
