@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:skip": "next experimental-compile",
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky install",

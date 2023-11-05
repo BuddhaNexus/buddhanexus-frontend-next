@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+
+FORBIDDEN_BRANCH="cypress"
+
+if [[ $GIT_REFLOG_ACTION == *merge* ]]; then
+	if [[ $GIT_REFLOG_ACTION == *$FORBIDDEN_BRANCH* ]]; then
+		echo
+		echo \# STOP THE PRESSES!
+		echo \#
+		echo \# You are trying to merge from: \"$FORBIDDEN_BRANCH\"
+		echo \# Surely you don\'t mean that?
+		echo \#
+		echo \# Run the following command now to discard your working tree changes:
+		echo \#
+		echo \# git reset --merge
+		echo
+		exit 1
+	fi
+fi
