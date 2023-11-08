@@ -2195,7 +2195,7 @@ aws4@^1.8.0:
   resolved "https://registry.yarnpkg.com/aws4/-/aws4-1.12.0.tgz#ce1c9d143389679e253b314241ea9aa5cec980d3"
   integrity sha512-NmWvPnx0F1SfrQbYwOi7OeaNGokp9XhzNioJ/CSBs8Qa4vxug81mhJEAVZwxXuBmYB5KDRfMq/F3RR0BIU7sWg==
 
-axe-core@^4.6.2:
+axe-core@^4.6.2, axe-core@^4.8.2:
   version "4.8.2"
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.8.2.tgz#2f6f3cde40935825cf4465e3c1c9e77b240ff6ae"
   integrity sha512-/dlp0fxyM3R8YW7MFzaHWXrf4zzbr0vaYb23VBFCl83R7nWNPg/yaQw2Dc8jzCMmDVLhSdzH8MjrsuIUuvX+6g==
@@ -2809,6 +2809,11 @@ cypress-axe@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/cypress-axe/-/cypress-axe-1.5.0.tgz#95082734583da77b51ce9b7784e14a442016c7a1"
   integrity sha512-Hy/owCjfj+25KMsecvDgo4fC/781ccL+e8p+UUYoadGVM2ogZF9XIKbiM6KI8Y3cEaSreymdD6ZzccbI2bY0lQ==
+
+cypress-plugin-steps@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/cypress-plugin-steps/-/cypress-plugin-steps-1.1.1.tgz#862938f7383a72cb2ab75bc1448df7371eb0888c"
+  integrity sha512-0TYBp8sIJovW9mfsN0uJXVMqW9XV9rqbX5fFwmbBmz0D2vMZShMD9BkBfjNC3Y812hZoTWw4dLE4UmV6fidycA==
 
 cypress@^13.4.0:
   version "13.4.0"

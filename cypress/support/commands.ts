@@ -40,11 +40,35 @@ Cypress.Commands.add("readDirectory", (directory: string) => {
   return cy.task("readDirectory", directory);
 });
 
+Cypress.Commands.add("getByTestId", (id, ...args) => {
+  return cy.get(`[data-testid=${id}]`, ...args);
+});
+
+Cypress.Commands.add("visitWithAxe", (path: string) => {
+  return cy.visit(path).injectAxe();
+});
 
 declare global {
   namespace Cypress {
     interface Chainable {
       readDirectory(directory: string): Chainable<string[]>;
+      /**
+       * Custom command to select DOM element by data-testid attribute.
+       * @example cy.getByTestId('greeting')
+       */
+      getByTestId(
+        dataTestAttribute: string,
+        args?: any
+      ): Chainable<JQuery<HTMLElement>>;
+      /**
+       * Custom command to visit page and inject accessibility rules.
+       *
+       * cy.injectAxe() must be run *after* a call to cy.visit() and before you run the checkA11y command.
+       *
+       * @example cy.visitWithAxe('/');
+       * @see https://github.com/cypress-io/cypress-axe
+       */
+      visitWithAxe(path: string): Chainable<void>;
     }
   }
 }

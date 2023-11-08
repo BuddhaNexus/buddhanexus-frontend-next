@@ -28,7 +28,7 @@ export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
           justifyContent: "flex-start",
           flexDirection: "row",
         },
-        "&:hover": { opacity: 0.8 },
+        "&:hover": { opacity: 0.9 },
         "&:active": { opacity: 1 },
       }}
       data-testid="db-language-tile"
@@ -46,7 +46,7 @@ export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
         }}
         alt={`select language: ${title}`}
       />
-      <Typography variant="h6" sx={{ mx: 2, mt: 1 }}>
+      <Typography component="h2" variant="h6" sx={{ mx: 2, mt: 1 }}>
         {title}
       </Typography>
     </Link>
