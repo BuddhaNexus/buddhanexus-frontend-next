@@ -47,6 +47,15 @@ export async function getGlobalSearchData({
   // TODO: Add pagination on BE
   //  - remove type casting once response model is added to api
   //  - review parsed prop nams.
+
+  // TODO: rendable once API is fixed
+  if (searchTerm.length >= 0) {
+    return {
+      data: { total: 0, results: new Map<string, SearchResult>() },
+      pageNumber,
+    };
+  }
+
   const { data } = await apiClient.POST("/search/", {
     // page: 0
     body: { search_string: searchTerm, ...parseDbPageQueryParams(queryParams) },
