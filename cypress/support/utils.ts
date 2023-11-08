@@ -16,19 +16,19 @@ export const THEMES = ["light", "dark"];
 // };
 
 // TODO: anchors on mdx pages have been temorarily disabled because of a bug returning a false possitive colour contrast error
-const axaContext = {
-  exclude: ".mdx-content a",
-};
 
 export function runThemeToggleTest() {
   cy.get("html").then(($el) => {
-    const theme = $el.attr("data-theme");
+    const theme = $el.attr("data-mui-color-scheme");
     const newTheme = THEMES.find((item) => item !== theme);
 
     cy.step(`Renders accessible ${newTheme} theme page?`);
-    cy.getByTestId("theme-toggle").click();
-    cy.get(`[data-theme="${newTheme}"]`).should("exist");
-    cy.checkA11y(axaContext);
+    cy.getByTestId("theme-toggle")
+      .click()
+      .then(() => {
+        cy.get(`[data-mui-color-scheme="${newTheme}"]`).should("exist");
+        cy.checkA11y();
+      });
   });
 }
 
@@ -63,7 +63,7 @@ export function runBasicPageTests(path: string) {
   console.log(`Testing page: ${path}`);
 
   cy.visitWithAxe(path);
-  cy.checkA11y(axaContext);
+  cy.checkA11y();
   runThemeToggleTest();
   runLocaleSwitchTests(path);
   // TODO: Mobile tests
