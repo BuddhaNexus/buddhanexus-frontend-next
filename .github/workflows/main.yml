@@ -47,7 +47,10 @@ jobs:
 
       - name: List screenshots
         if: failure()
-        run: echo "::set-output name=screenshots::$(find cypress/results/screenshots -type f -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' | xargs)"
+        run: |
+          screenshots=$(find cypress/results/screenshots -type f -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' | xargs)
+          rename_screenshots=$(echo $screenshots | tr ' ' '_')
+          echo "::set-output name=screenshots::${rename_screenshots}"
         id: list
 
       - name: Create or update comment
