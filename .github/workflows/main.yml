@@ -48,14 +48,10 @@ jobs:
       - name: List screenshots
         if: failure()
         run: |
-          counter=1
-          screenshots=$(find cypress/results/screenshots -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' \) -print0 | while IFS= read -r -d '' file; do
-            new_name=$(echo "$file" | sed "s/.*\///; s/\(.*\)\..*/\1_${counter}.png/")
-            mv "$file" "$new_name"
-            echo "$new_name"
-            ((counter++))
-          done)
-          echo "screenshots=${screenshots}" >> "$GITHUB_ENV"
+          imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
+          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
+          for i in "${!imgs[@]}"; do mv "${imgs[$i]}" "${renamed_imgs[$i]}"; done
+          echo "screenshots=${renamed_imgs}" >> "$GITHUB_ENV"
         id: list
   
 
