@@ -16,7 +16,7 @@ export default defineConfig({
     baseUrl: "http://localhost:3000",
     defaultCommandTimeout: 10000,
     responseTimeout: 60000,
-    screenshotsFolder: "cypress/screenshots",
-    videosFolder: "cypress/videos",
+    screenshotsFolder: "cypress/output/screenshots",
+    videosFolder: "cypress/output/videos",
   },
 });

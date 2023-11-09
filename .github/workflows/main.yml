@@ -1,12 +1,12 @@
 name: CI
 on:
-  push:
+  workflow_dispatch:
   pull_request:
 jobs:
   install:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "18"
@@ -21,13 +21,14 @@ jobs:
       - name: Run ESLint
         run: yarn eslint .
 
-  # TODO: This is an "in principle" implementation test
   build-and-test:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
     needs: install
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: "18"
@@ -39,3 +40,56 @@ jobs:
           build: yarn build:skip
           start: yarn start
           browser: chrome
+      
+      - name: Find and rename cypress fail screenshots
+        id: list
+        if: failure()
+        run: |
+          imgs=$(find cypress/output/screenshots -type f -name '*.png' | xargs)
+          cypress_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
+          echo "Cypress Screenshots:"
+          for i in "${!imgs[@]}"; do  
+            mv "${imgs[$i]}" "${cypress_imgs[$i]}"; 
+            echo "${imgs[$i]}  >>>   ${cypress_imgs[$i]}"; 
+          done
+          echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
+
+      - name: Upload screenshots to image host
+        id: upload-screenshots
+        if: failure()
+        run: |
+          cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
+          imgkit_responses=()
+          for img in ${cypress_imgs[@]}; do
+            echo "Uploading $img"
+            response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
+              -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
+              -F "file=@$img;type=image/png" \
+              -F "fileName=$(basename $img)")
+            imgkit_responses+=("$response")
+          done
+          echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
+
+      - name: Extract image data and create comment
+        if: failure()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.split('\n');
+
+            if (imgkitResponses.length === 0) {
+              return;
+            }
+            
+            const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
+              const { name, url } = JSON.parse(response);
+              return `![${name}](${url})`;
+            }).join('\n')}`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+  
