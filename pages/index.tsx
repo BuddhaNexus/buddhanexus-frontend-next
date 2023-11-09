@@ -58,6 +58,7 @@ export default function Home() {
         <Typography
           align="center"
           variant="body1"
+          color="whitesmoke"
           sx={{ fontFamily: sourceSerif.style.fontFamily }}
         >
           {t("home:intro")}
