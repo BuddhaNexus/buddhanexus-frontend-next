@@ -50,11 +50,12 @@ jobs:
         run: |
           counter=1
           screenshots=$(find cypress/results/screenshots -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' \) -print0 | while IFS= read -r -d '' file; do
-            new_name="${counter}.png"
+            new_name=$(echo "$file" | sed "s/.*\///; s/\(.*\)\..*/\1_${counter}.png/")
             mv "$file" "$new_name"
+            echo "$new_name"
             ((counter++))
           done)
-          echo "::set-output name=screenshots::${screenshots}"
+          echo "screenshots=${screenshots}" >> "$GITHUB_ENV"
         id: list
   
 
