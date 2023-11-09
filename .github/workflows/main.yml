@@ -48,10 +48,15 @@ jobs:
       - name: List screenshots
         if: failure()
         run: |
-          screenshots=$(find cypress/results/screenshots -type f -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' | xargs)
-          rename_screenshots=$(echo $screenshots | tr ' ' '_')
-          echo "::set-output name=screenshots::${rename_screenshots}"
+          counter=1
+          screenshots=$(find cypress/results/screenshots -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' \) -print0 | while IFS= read -r -d '' file; do
+            new_name="${counter}.png"
+            mv "$file" "$new_name"
+            ((counter++))
+          done)
+          echo "::set-output name=screenshots::${screenshots}"
         id: list
+  
 
       - name: Create or update comment
         if: failure()
