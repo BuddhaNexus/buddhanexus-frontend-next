@@ -44,6 +44,28 @@ jobs:
         if: failure()
         with:
           name: cypress-artifacts
-          path: |
-            cypress/results/screenshots/
-            cypress/results/videos/
+          path: cypress/results/screenshots/
+
+      - name: List screenshots
+        if: failure()
+        run: echo "::set-output name=screenshots::$(ls cypress/results/screenshots -I index.json | xargs)"
+        id: list
+
+      - name: Create or update comment
+        if: failure()
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const screenshots = '${{ steps.list.outputs.screenshots }}'.split(' ');
+            let body = screenshots.map(name => {
+              return `![${name}](https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/files/${path.join('cypress/results/screenshots', name)})`;
+            }).join('\n');
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
