@@ -47,7 +47,7 @@ jobs:
 
       - name: List screenshots
         if: failure()
-        run: echo "::set-output name=screenshots::$(ls cypress/results/screenshots -I index.json | xargs)"
+        run: echo "::set-output name=screenshots::$(find cypress/results/screenshots -type f -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' | xargs)"
         id: list
 
       - name: Create or update comment
@@ -59,9 +59,10 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const screenshots = '${{ steps.list.outputs.screenshots }}'.split(' ');
-            let body = screenshots.map(name => {
+            let imgs = screenshots.map(name => {
               return `![${name}](https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/files/${path.join('cypress/results/screenshots', name)})`;
-            }).join('\n');
+            });
+            const body = `## Cypress Screenshots\n\n${imgs.join('\n')}`;
             github.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
