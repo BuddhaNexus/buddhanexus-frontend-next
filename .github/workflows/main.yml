@@ -39,13 +39,11 @@ jobs:
           start: yarn start
           browser: chrome
 
-  upload-artifacts:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    if: failure()
-    steps:
       - name: Save Cypress artifacts
         uses: actions/upload-artifact@v3
+        if: failure()
         with:
           name: cypress-artifacts
-          path: cypress/results/
+          path: |
+            cypress/results/screenshots/
+            cypress/results/videos/
