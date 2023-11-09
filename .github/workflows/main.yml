@@ -51,7 +51,7 @@ jobs:
           imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
           renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
           for i in "${!imgs[@]}"; do mv "${imgs[$i]}" "${renamed_imgs[$i]}"; done
-          echo "screenshots=${renamed_imgs}" >> "$GITHUB_ENV"
+          echo "screenshots=${renamed_imgs}" >> "$GITHUB_OUTPUT"
         id: list
   
 
