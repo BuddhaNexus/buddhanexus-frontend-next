@@ -42,34 +42,26 @@ jobs:
         id: list
         if: failure()
         run: |
-            imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
-            renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
-            for i in "${!imgs[@]}"; do mv "${imgs[$i]}" "${renamed_imgs[$i]}"; done
-            echo "screenshots=${renamed_imgs}" >> "$GITHUB_OUTPUT"
+          imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
+          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
+          echo "Cypress Screenshots:"
+          for i in "${!imgs[@]}"; do 
+            mv "${imgs[$i]}" "${renamed_imgs[$i]}"; 
+            echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
+          done
 
-      - name: Upload screenshots
-        id: upload
+      - name: Upload images to comment
         if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-screenshots
-          path: ${{ steps.list.outputs.screenshots }}
-  
-      - name: Create comment with screenshots
-        if: failure()
-        uses: actions/github-script@v3
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const screenshots = '${{ steps.list.outputs.screenshots }}'.split(' ');
-            let imgs = screenshots.map(name => {
-              let artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/suites/${{ github.run_id }}/artifacts/${{ steps.upload.outputs.artifact }}`;
-              return `![${name}](${artifactUrl}/${name})`;
-            });
-            const body = `## Cypress Screenshots\n\n${imgs.join('\n')}`;
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+        run: |
+          count=0
+          for screenshot in $(find "cypress/results/screenshots/" -name "*.png"); do
+            if [ $count -ge 10 ]; then
+              echo "Cypress created more than 10 screenshots. Run locally to see all."
+              break
+            fi
+            img_data=$(base64 -i $screenshot)
+            response=$(curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Content-Type: application/json" -d '{"data": "'$img_data'", "name": "'$(basename $screenshot)'"}' https://api.github.com/repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments)
+            img_url=$(echo $response | jq -r '.content.download_url')
+            echo "Added screenshot as comment: $img_url"
+            count=$((count+1))
+          done
