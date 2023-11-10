@@ -38,48 +38,33 @@ jobs:
           start: yarn start
           browser: chrome
 
-      - name: Save Cypress screenshots
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/results/screenshots/
-
-  comment:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: failure()
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: cypress-screenshots
-
-      - name: List files
-        run: |
-          echo "Downloaded artifacts:"
-          ls -R
-      
-      - name: Rename screenshots
+      - name: Find and rename screenshots
         id: list
+        if: failure()
         run: |
-          output=
-          imgs=$(find . -type f -name '*.png' | xargs)
-          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
-          for i in "${!imgs[@]}"; do mv "${imgs[$i]}" "${renamed_imgs[$i]}"; done
-          echo "screenshots=${renamed_imgs}" >> "$GITHUB_OUTPUT"
-  
+            imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
+            renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
+            for i in "${!imgs[@]}"; do mv "${imgs[$i]}" "${renamed_imgs[$i]}"; done
+            echo "screenshots=${renamed_imgs}" >> "$GITHUB_OUTPUT"
 
-      - name: Create or update comment
+      - name: Upload screenshots
+        id: upload
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-screenshots
+          path: ${{ steps.list.outputs.screenshots }}
+  
+      - name: Create comment with screenshots
+        if: failure()
         uses: actions/github-script@v3
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const fs = require('fs');
-            const path = require('path');
             const screenshots = '${{ steps.list.outputs.screenshots }}'.split(' ');
             let imgs = screenshots.map(name => {
-              return `![${name}](https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/files/${path.join('cypress/results/screenshots', name)})`;
+              let artifactUrl = `https://github.com/${process.env.GITHUB_REPOSITORY}/suites/${{ github.run_id }}/artifacts/${{ steps.upload.outputs.artifact }}`;
+              return `![${name}](${artifactUrl}/${name})`;
             });
             const body = `## Cypress Screenshots\n\n${imgs.join('\n')}`;
             github.issues.createComment({
