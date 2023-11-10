@@ -43,7 +43,7 @@ jobs:
         if: failure()
         run: |
           imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
-          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshot${i+1}.png/")"; done))
+          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/screenshots\/screenshot${i+1}.png/")"; done))
           echo "Cypress Screenshots:"
           for i in "${!imgs[@]}"; do 
             mv "${imgs[$i]}" "${renamed_imgs[$i]}"; 
@@ -54,7 +54,7 @@ jobs:
         if: failure()
         run: |
           count=0
-          for screenshot in $(find "cypress/results/screenshots/" -name "*.png"); do
+          for screenshot in $(find "cypress/screenshots/" -name "*.png"); do
             if [ $count -ge 10 ]; then
               echo "Cypress created more than 10 screenshots. Run locally to see all."
               break
