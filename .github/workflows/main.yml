@@ -37,7 +37,7 @@ jobs:
           build: yarn build:skip
           start: yarn start
           browser: chrome
-        
+
       - name: Find and rename screenshots
         id: list
         if: failure()
@@ -56,25 +56,38 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Action"
 
-      - name: Checkout new branch
+      - name: Check if branch exists
+        id: check-branch
         if: failure()
         run: |
-          git checkout -b pr-actions-${{ github.event.pull_request.number }}
-      
+          if git ls-remote --exit-code --heads origin pr-actions-${{ github.event.pull_request.number }}; then
+            echo "Branch exists"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout screenshot branch
+        if: failure()
+        run: |
+          if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
+            git checkout pr-actions-${{ github.event.pull_request.number }}
+          else
+            git checkout -b pr-actions-${{ github.event.pull_request.number }}
+          fi
+
       - name: Commit screenshots
         if: failure()
         run: |
           git add cypress/results/screenshots/*.png
-          git commit -m "Add screenshots"   
+          git commit -m "Add screenshots"
 
       - name: Push changes
         if: failure()
         run: |
           git push origin pr-actions-${{ github.event.pull_request.number }}
-        
+
       - name: Create comment with screenshots
         if: failure()
-        uses: actions/github-script@v5
+        uses: actions/github-script@v3
         with:
           script: |
             const fs = require('fs');
@@ -86,10 +99,9 @@ jobs:
               return `![${file}](${url})`;
             });
             const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body
             });
-
