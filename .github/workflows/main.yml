@@ -81,7 +81,7 @@ jobs:
           git commit -m "Add screenshots"
 
       - name: Push changes
-        if: !steps.check-branch.outputs.branch_exists
+        if: ${{ !steps.check-branch.outputs.branch_exists }}
         run: |
           git push origin pr-actions-${{ github.event.pull_request.number }}
 
