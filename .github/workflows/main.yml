@@ -69,6 +69,7 @@ jobs:
         if: failure()
         run: |
           if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
+            git fetch origin
             git checkout origin/pr-actions-${{ github.event.pull_request.number }}
           else
             git checkout -b pr-actions-${{ github.event.pull_request.number }}
