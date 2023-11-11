@@ -38,6 +38,31 @@ jobs:
           start: yarn start
           browser: chrome
 
+      - name: Set up git
+        if: failure()
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Action"
+
+      - name: Check if branch exists
+        id: check-branch
+        if: failure()
+        run: |
+          if git ls-remote --exit-code --heads origin actions-pr-${{ github.event.pull_request.number }}; then
+            echo "Branch exists"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout screenshot branch
+        if: failure()
+        run: |
+          if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
+            git fetch origin
+            git checkout origin/actions-pr-${{ github.event.pull_request.number }}
+          else
+            git checkout -b actions-pr-${{ github.event.pull_request.number }}
+          fi
+      
       - name: Find and rename screenshots
         id: list
         if: failure()
@@ -50,31 +75,6 @@ jobs:
             echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
           done
 
-      - name: Set up git
-        if: failure()
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Action"
-
-      - name: Check if branch exists
-        id: check-branch
-        if: failure()
-        run: |
-          if git ls-remote --exit-code --heads origin pr-actions-${{ github.event.pull_request.number }}; then
-            echo "Branch exists"
-            echo "branch_exists=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout screenshot branch
-        if: failure()
-        run: |
-          if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
-            git fetch origin
-            git checkout origin/pr-actions-${{ github.event.pull_request.number }}
-          else
-            git checkout -b pr-actions-${{ github.event.pull_request.number }}
-          fi
-
       - name: Commit screenshots
         if: failure()
         run: |
@@ -84,7 +84,7 @@ jobs:
       - name: Push changes
         if: ${{ !steps.check-branch.outputs.branch_exists }}
         run: |
-          git push origin pr-actions-${{ github.event.pull_request.number }}
+          git push origin actions-pr-${{ github.event.pull_request.number }}
 
       - name: Create comment with screenshots
         if: failure()
@@ -94,10 +94,10 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             const screenshotsDir = 'cypress/results/screenshots';
-            const screenshots = fs.readdirSync(screenshotsDir).map(file => {
+            const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
               const filePath = path.join(screenshotsDir, file);
-              const url = `https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/pr-actions-${context.issue.number}/${filePath}`;
-              return `![${file}](${url})`;
+              const url = `https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/actions-pr-${context.issue.number}/${filePath}`;
+              return `![${file}](${url}?token=${secrets.GITHUB_TOKEN})`;
             });
             const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
             github.rest.issues.createComment({
