@@ -1,0 +1,24 @@
+name: Delete Cypress screenshots on PR closure
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check if branch exists
+        id: check-branch
+        run: |
+          if git ls-remote --exit-code --heads origin pr-actions-${{ github.event.pull_request.number }}; then
+            echo "Cypress screenshot branch exists"
+            echo "branch_exists=true" >> $GITHUB_OUTPUT
+
+      - name: Delete branch
+        if: steps.check-branch.outputs.branch_exists
+        run: |
+          git push origin --delete pr-actions-${{ github.event.pull_request.number }}
+      
