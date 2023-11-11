@@ -97,7 +97,7 @@ jobs:
             const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
               const filePath = path.join(screenshotsDir, file);
               const url = `https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/actions-pr-${context.issue.number}/${filePath}`;
-              return `![${file}](${url}?token=${secrets.GITHUB_TOKEN})`;
+              return `![${file}](${url}?token=${process.env.GITHUB_TOKEN})`;
             });
             const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
             github.rest.issues.createComment({
