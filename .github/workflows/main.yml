@@ -69,7 +69,7 @@ jobs:
         if: failure()
         run: |
           if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
-            git checkout pr-actions-${{ github.event.pull_request.number }}
+            git checkout origin/pr-actions-${{ github.event.pull_request.number }}
           else
             git checkout -b pr-actions-${{ github.event.pull_request.number }}
           fi
@@ -81,7 +81,7 @@ jobs:
           git commit -m "Add screenshots"
 
       - name: Push changes
-        if: failure()
+        if: !steps.check-branch.outputs.branch_exists
         run: |
           git push origin pr-actions-${{ github.event.pull_request.number }}
 
