@@ -87,7 +87,7 @@ jobs:
 
       - name: Create comment with screenshots
         if: failure()
-        uses: actions/github-script@v3
+        uses: actions/github-script@v5
         with:
           script: |
             const fs = require('fs');
