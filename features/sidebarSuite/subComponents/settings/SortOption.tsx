@@ -1,57 +1,51 @@
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
-import { useSearchParams } from "@components/hooks/useTypedSearchParams";
-import { Box, FormControl, FormLabel, MenuItem, Select } from "@mui/material";
-import type { QueryParams } from "features/sidebarSuite/config/types";
-
-type SortParam = NonNullable<QueryParams["sort_method"]>;
-
-type Option = {
-  [K in SortParam]?: "sortLength" | "sortParallel" | "sortSource";
-};
-
-const SORT_OPTIONS: Option[] = [
-  { position: "sortSource" },
-  { "quoted-text": "sortParallel" },
-  { length2: "sortLength" },
-];
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  OutlinedInput,
+  Select,
+} from "@mui/material";
+import {
+  type SortMethod,
+  sortMethods,
+} from "features/sidebarSuite/config/types";
 
 export default function SortOption() {
   const { t } = useTranslation("settings");
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { uniqueSettings, sortMethodSelectConfig } = useDbQueryParams();
+  const { uniqueSettings, sortMethodSelectValue } = useDbQueryParams();
 
-  const params = new URLSearchParams(searchParams);
-
-  const handleSelectChange = async (value: SortParam) => {
-    params.set(uniqueSettings.queryParams.sortMethod, value);
-
+  const handleSelectChange = async (sortMethod: SortMethod) => {
     await router.push({
       pathname: router.pathname,
-      query: params.toString(),
+      query: {
+        ...router.query,
+        [uniqueSettings.queryParams.sortMethod]: sortMethod,
+      },
     });
   };
 
   return (
-    <Box sx={{ width: 1, mb: 2 }}>
-      <FormLabel id="sort-option-selector-label">
-        {t("optionsLabels.sorting")}
-      </FormLabel>
+    <Box sx={{ width: 1, my: 3 }}>
       <FormControl sx={{ width: 1 }}>
+        <InputLabel id="sort-option-selector-label">
+          {t("optionsLabels.sort.selector")}
+        </InputLabel>
         <Select
           id="sort-option-selector"
           aria-labelledby="sort-option-selector-label"
-          value={sortMethodSelectConfig}
-          onChange={(e) => handleSelectChange(e.target.value as SortParam)}
+          value={sortMethodSelectValue}
+          input={<OutlinedInput label={t("optionsLabels.sort.selector")} />}
+          onChange={(e) => handleSelectChange(e.target.value as SortMethod)}
         >
-          {SORT_OPTIONS.map((option) => {
-            const key = Object.keys(option)[0] as keyof typeof option;
-            const value = option[key]!;
+          {sortMethods.map((option) => {
             return (
-              <MenuItem key={key} value={key}>
-                {t(`optionsLabels.${value}`)}
+              <MenuItem key={option} value={option}>
+                {t(`optionsLabels.sort.${option}`)}
               </MenuItem>
             );
           })}

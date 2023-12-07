@@ -54,17 +54,19 @@ function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
   return numbersData as NumbersPageData;
 }
 
+import { parseDbPageQueryParams } from "./utils";
+
 export async function getNumbersData({
   fileName,
   queryParams,
   pageNumber,
 }: InfiniteFilePropApiQuery): Promise<PagedResponse<ApiNumbersPageData>> {
-  const limits = queryParams?.limits
-    ? JSON.parse(queryParams.limits as string)
-    : {};
-
   const { data } = await apiClient.POST("/numbers-view/numbers", {
-    body: { file_name: fileName, ...queryParams, limits, page: pageNumber },
+    body: {
+      file_name: fileName,
+      ...parseDbPageQueryParams(queryParams),
+      page: 0,
+    },
   });
   // TODO: - remove type casting once response model is added to api
   // - add page prop

@@ -1,5 +1,5 @@
 import type { FC, PropsWithChildren } from "react";
-import { useTheme } from "next-themes";
+import type { SxProps } from "@mui/material";
 import { Container } from "@mui/material";
 import type { Breakpoint } from "@mui/system";
 import bgChn from "@public/assets/images/bg_chn_upscaled_bw.jpg";
@@ -8,13 +8,10 @@ import bgSkt from "@public/assets/images/bg_skt_upscaled_bw.jpg";
 import bgTib from "@public/assets/images/bg_tib_upscaled_bw.jpg";
 import bgWelcome from "@public/assets/images/bg_welcome_upscaled_bw.jpg";
 import type { Property } from "csstype";
-import { Main } from "features/sidebarSuite/common/MuiStyledSidebarComponents";
-import {
-  isSidebarOpenAtom,
-  SidebarSuite,
-} from "features/sidebarSuite/SidebarSuite";
-import { useAtomValue } from "jotai";
 import { SourceLanguage } from "utils/constants";
+
+import { QueryResultsPageContent } from "./QueryResultsPageContent";
+export type BackgroundName = SourceLanguage | "welcome";
 
 const BgImageSrcs: Record<BackgroundName, string> = {
   [SourceLanguage.TIBETAN]: bgTib.src,
@@ -32,70 +29,57 @@ const BgImageBgSize: Record<BackgroundName, Property.BackgroundSize> = {
   welcome: "cover",
 };
 
-export type BackgroundName = SourceLanguage | "welcome";
-
 interface Props extends PropsWithChildren {
   backgroundName?: BackgroundName;
   maxWidth?: Breakpoint;
-  hasSidebar?: boolean;
+  isQueryResultsPage?: boolean;
 }
 
 export const PageContainer: FC<Props> = ({
   children,
   backgroundName,
   maxWidth = "md",
-  hasSidebar = false,
+  isQueryResultsPage,
 }) => {
-  const isSidebarOpen = useAtomValue(isSidebarOpenAtom);
-  const { theme } = useTheme();
+  const containerStyles: SxProps = {
+    pt: { xs: 0, sm: 4 },
+    px: { xs: 0, sm: 2, lg: 4 },
+    flex: 1,
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+  };
 
   return (
     <>
       {backgroundName && (
         <Container
           maxWidth={false}
-          sx={{
+          sx={(theme) => ({
             background: `url(${BgImageSrcs[backgroundName]})`,
             backgroundPosition: "center",
             backgroundSize: BgImageBgSize[backgroundName],
-            opacity: theme === "dark" ? 0.02 : 0.05,
+            opacity: 0.05,
+            // @ts-expect-error MUI css variable type mismatch
+            [theme.getColorSchemeSelector("dark")]: {
+              opacity: 0.02,
+            },
             height: "100%",
             minWidth: "100vw",
             position: "fixed",
             zIndex: -1,
-          }}
+          })}
         />
       )}
-      {hasSidebar ? (
-        <>
-          <Main open={isSidebarOpen}>
-            <Container
-              maxWidth={maxWidth}
-              sx={{
-                flex: 1,
-                display: "flex",
-                flexDirection: "column",
-                height: "100%",
-              }}
-            >
-              {children}
-            </Container>
-          </Main>
-          <SidebarSuite />
-        </>
-      ) : (
-        <Container
-          component="main"
+      {isQueryResultsPage ? (
+        <QueryResultsPageContent
           maxWidth={maxWidth}
-          sx={{
-            pt: { xs: 2, sm: 4 },
-            px: { xs: 2, lg: 4 },
-            flex: 1,
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}
+          containerStyles={containerStyles}
         >
+          {children}
+        </QueryResultsPageContent>
+      ) : (
+        <Container component="main" maxWidth={maxWidth} sx={containerStyles}>
           {children}
         </Container>
       )}

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "next-i18next";
 import {
   type InputKeyDown,
   useGlobalSearch,
@@ -15,6 +16,7 @@ import {
 } from "./GlobalSearchStyledMuiComponents";
 
 const GlobalSearchDesktop = () => {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -38,7 +40,12 @@ const GlobalSearchDesktop = () => {
         marginRight: 3,
       }}
     >
-      <IconButton color="inherit" onClick={() => setIsOpen(!isOpen)}>
+      <IconButton
+        color="inherit"
+        // TODO: i18n
+        aria-label={isOpen ? "close search box" : "open search box"}
+        onClick={() => setIsOpen(!isOpen)}
+      >
         {isOpen ? (
           <CloseIcon sx={{ fontSize: 28 }} />
         ) : (
@@ -47,26 +54,29 @@ const GlobalSearchDesktop = () => {
       </IconButton>
 
       <AppTopBarSearchBoxWrapper isOpen={isOpen}>
-        <SearchBoxInput
-          inputRef={inputRef}
-          // TODO: i18n
-          placeholder="Search..."
-          variant="outlined"
-          isNarrow={true}
-          InputProps={{
-            endAdornment: (
-              <IconButton
-                onClick={() => handleOnSearch(inputRef.current?.value ?? "")}
-              >
-                <KeyboardReturnIcon />
-              </IconButton>
-            ),
-          }}
-          fullWidth
-          onKeyDown={(e: InputKeyDown) =>
-            handleOnSearch(inputRef.current?.value ?? "", e)
-          }
-        />
+        {isOpen && (
+          <SearchBoxInput
+            inputRef={inputRef}
+            placeholder={t("search.placeholder")}
+            variant="outlined"
+            isNarrow={true}
+            InputProps={{
+              endAdornment: (
+                <IconButton
+                  // TODO: i18n
+                  aria-label="Run search"
+                  onClick={() => handleOnSearch(inputRef.current?.value ?? "")}
+                >
+                  <KeyboardReturnIcon />
+                </IconButton>
+              ),
+            }}
+            fullWidth
+            onKeyDown={(e: InputKeyDown) =>
+              handleOnSearch(inputRef.current?.value ?? "", e)
+            }
+          />
+        )}
       </AppTopBarSearchBoxWrapper>
     </Box>
   );

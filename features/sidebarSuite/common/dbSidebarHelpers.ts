@@ -4,32 +4,13 @@ import type { OverridableComponent } from "@mui/material/OverridableComponent";
 import type {
   MenuOmission,
   MenuSetting,
+  QueryParams,
   UtilityOption,
 } from "features/sidebarSuite/config/types";
-import type { SourceLanguage } from "utils/constants";
-
-/**
- * Next JS stores dynamic routes in the router object query prop which is also where api query params are pushed to. Dynamic route params need to be removed to avoid polluting result page urls and sending unaccepted params in api requests.
- *
- * @see {@link https://nextjs.org/docs/pages/api-reference/functions/use-router#router-object}.
- *
- */
-export const getQueryParamsFromRouter = ({
-  route,
-  params,
-}: {
-  route: string;
-  params: URLSearchParams;
-}): URLSearchParams => {
-  const paramsWithoutDynamicRouteProps = new URLSearchParams(params);
-  paramsWithoutDynamicRouteProps.delete("file");
-
-  if (!route.startsWith("/search")) {
-    paramsWithoutDynamicRouteProps.delete("language");
-  }
-
-  return paramsWithoutDynamicRouteProps;
-};
+import type { Script } from "features/sidebarSuite/subComponents/settings/TextScriptOption";
+import { EwtsConverter } from "tibetan-ewts-converter";
+import { getParallelDownloadData } from "utils/api/downloads";
+import { SourceLanguage } from "utils/constants";
 
 export const isSettingOmitted = ({
   omissions,
@@ -44,10 +25,30 @@ export const isSettingOmitted = ({
 }) => {
   return Boolean(
     omissions?.[settingName]?.[view]?.some((omittedLang) =>
-      ["allLangs", language].includes(omittedLang)
-    )
+      ["allLangs", language].includes(omittedLang),
+    ),
   );
 };
+
+export type PopperAnchorState = Record<UtilityOption, HTMLElement | null>;
+
+type PopperUtilityStates<State> = [
+  State,
+  React.Dispatch<React.SetStateAction<State>>,
+];
+type PopperAnchorStateHandler = PopperUtilityStates<PopperAnchorState>;
+
+interface UtilityClickHandlerProps {
+  event: React.MouseEvent<HTMLElement>;
+  fileName: string;
+  download: {
+    call: (url: string, name: string) => void;
+    fileName: string;
+    queryParams: Partial<QueryParams>;
+  };
+  href: string;
+  popperAnchorStateHandler: PopperAnchorStateHandler;
+}
 
 type UtilityOptionProps = {
   callback: (props: UtilityClickHandlerProps) => void;
@@ -58,25 +59,6 @@ export type UtilityOptions = {
   [value in UtilityOption]: UtilityOptionProps;
 };
 
-export type PopperAnchorState = Record<UtilityOption, HTMLElement | null>;
-
-type PopperUtilityStates<State> = [
-  State,
-  React.Dispatch<React.SetStateAction<State>>
-];
-type PopperAnchorStateHandler = PopperUtilityStates<PopperAnchorState>;
-
-interface UtilityClickHandlerProps {
-  event: React.MouseEvent<HTMLElement>;
-  fileName: string;
-  download: {
-    call: (url: string, name: string) => void;
-    file: { url: string; name: string } | undefined;
-  };
-  href: string;
-  popperAnchorStateHandler: PopperAnchorStateHandler;
-}
-
 export const defaultAnchorEls = {
   download: null,
   copyQueryTitle: null,
@@ -84,22 +66,29 @@ export const defaultAnchorEls = {
   emailQueryLink: null,
 };
 
-export const onDownload = ({
+export const onDownload = async ({
   download,
   event,
   popperAnchorStateHandler,
 }: UtilityClickHandlerProps) => {
   const [anchorEl, setAnchorEl] = popperAnchorStateHandler;
 
-  if (download?.file) {
-    const { call: getDownload, file } = download;
+  const file = await getParallelDownloadData({
+    fileName: download.fileName,
+    queryParams: download.queryParams,
+  });
+
+  if (file) {
+    const { call: getDownload } = download;
 
     getDownload(file.url, file.name);
   }
 
   setAnchorEl({
     ...defaultAnchorEls,
-    download: anchorEl.download ? null : event.currentTarget,
+    download: anchorEl.download
+      ? null
+      : (event.nativeEvent.target as HTMLElement),
   });
 };
 
@@ -153,6 +142,21 @@ export const onEmailQueryLink = ({
     ...defaultAnchorEls,
     emailQueryLink: anchorEl.emailQueryLink ? null : event.currentTarget,
   });
+};
+
+const ewts = new EwtsConverter();
+export const enscriptText = ({
+  text,
+  language,
+  script,
+}: {
+  text: string;
+  language: SourceLanguage;
+  script: Script;
+}) => {
+  return script === "Wylie" && language === SourceLanguage.TIBETAN
+    ? ewts.to_unicode(text)
+    : text;
 };
 
 //  TODO: clarify spec - is disabling logically impossible (per include/exclude filter selections) desired behaviour? Applies to all included/excluded filters.

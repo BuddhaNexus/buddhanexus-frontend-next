@@ -2,7 +2,7 @@ import type { FC } from "react";
 import React from "react";
 import { Link } from "@components/common/Link";
 import { Box, Typography } from "@mui/material";
-import { useTheme as useMaterialTheme } from "@mui/material/styles";
+import { useTheme } from "@mui/material/styles";
 
 interface Props {
   title: string;
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
-  const materialTheme = useMaterialTheme();
+  const materialTheme = useTheme();
 
   return (
     <Link
@@ -28,9 +28,10 @@ export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
           justifyContent: "flex-start",
           flexDirection: "row",
         },
-        "&:hover": { opacity: 0.8 },
+        "&:hover": { opacity: 0.9 },
         "&:active": { opacity: 1 },
       }}
+      data-testid="db-language-tile"
     >
       <Box
         component="img"
@@ -45,7 +46,7 @@ export const ContentLanguageSelector: FC<Props> = ({ title, href, color }) => {
         }}
         alt={`select language: ${title}`}
       />
-      <Typography variant="h6" sx={{ mx: 2, mt: 1 }}>
+      <Typography component="h2" variant="h6" sx={{ mx: 2, mt: 1 }}>
         {title}
       </Typography>
     </Link>

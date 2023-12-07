@@ -3,38 +3,29 @@ import "globalStyles.css";
 import React from "react";
 import type { AppProps } from "next/app";
 import Head from "next/head";
-import { appWithTranslation, i18n } from "next-i18next";
+import { appWithTranslation } from "next-i18next";
+import i18nextConfig from "next-i18next.config";
 import { NextAdapter } from "next-query-params";
 import { DefaultSeo } from "next-seo";
 import SEO from "next-seo.config";
-import { ThemeProvider } from "next-themes";
 import { AppTopBar } from "@components/layout/AppTopBar";
 import type { EmotionCache } from "@emotion/react";
 import { CacheProvider } from "@emotion/react";
 import CssBaseline from "@mui/material/CssBaseline";
 import {
-  Hydrate,
+  HydrationBoundary,
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import queryString from "query-string";
 import { QueryParamProvider } from "use-query-params";
+import { queryCacheTimeDefaults } from "utils/api/apiQueryUtils";
 import createEmotionCache from "utils/createEmotionCache";
-import { MUIThemeProvider } from "utils/MUIThemeProvider";
+import { ThemeProvider } from "utils/ThemeProvider";
 
 // Client-side cache, shared for the whole session of the user in the browser.
 const clientSideEmotionCache = createEmotionCache();
-
-if (process.env.NODE_ENV !== "production") {
-  if (typeof window === "undefined") {
-    const { applyServerHMR } = await import("i18next-hmr/server");
-    applyServerHMR(() => i18n);
-  } else {
-    const { applyClientHMR } = await import("i18next-hmr/client");
-    applyClientHMR(() => i18n);
-  }
-}
 
 interface MyAppProps extends AppProps {
   emotionCache: EmotionCache;
@@ -45,7 +36,14 @@ function MyApp({
   pageProps,
   emotionCache = clientSideEmotionCache,
 }: MyAppProps) {
-  const [queryClient] = React.useState(() => new QueryClient());
+  const [queryClient] = React.useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: { refetchOnWindowFocus: false, ...queryCacheTimeDefaults },
+        },
+      }),
+  );
 
   return (
     <CacheProvider value={emotionCache}>
@@ -59,7 +57,7 @@ function MyApp({
         }}
       >
         <QueryClientProvider client={queryClient}>
-          <Hydrate state={pageProps.dehydratedState}>
+          <HydrationBoundary state={pageProps.dehydratedState}>
             <DefaultSeo {...SEO} />
             <Head>
               <meta
@@ -69,13 +67,11 @@ function MyApp({
             </Head>
 
             <ThemeProvider>
-              <MUIThemeProvider>
-                <CssBaseline />
-                <AppTopBar />
-                <Component {...pageProps} />
-              </MUIThemeProvider>
+              <CssBaseline />
+              <AppTopBar />
+              <Component {...pageProps} />
             </ThemeProvider>
-          </Hydrate>
+          </HydrationBoundary>
           <ReactQueryDevtools />
         </QueryClientProvider>
       </QueryParamProvider>
@@ -83,4 +79,4 @@ function MyApp({
   );
 }
 
-export default appWithTranslation(MyApp);
+export default appWithTranslation(MyApp, i18nextConfig);

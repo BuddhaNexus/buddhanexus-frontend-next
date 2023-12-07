@@ -25,6 +25,7 @@ export default function SearchPage() {
   // IN DEVELOPMENT
   const { isReady } = useRouter();
 
+  // TODO: fix server error if no search term
   const { sourceLanguage, queryParams } = useDbQueryParams();
   const { isFallback } = useSourceFile();
   const { handleOnSearch, searchParam } = useGlobalSearch();
@@ -45,18 +46,17 @@ export default function SearchPage() {
     fetchNextPage,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     fetchPreviousPage,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    isInitialLoading,
     isLoading,
   } = useInfiniteQuery<PagedResponse<any>>({
+    initialPageParam: 0,
     queryKey: DbApi.GlobalSearchData.makeQueryKey({
       searchTerm: searchParam,
       queryParams,
     }),
-    queryFn: ({ pageParam = 0 }) =>
+    queryFn: ({ pageParam }) =>
       DbApi.GlobalSearchData.call({
         searchTerm: searchParam,
-        pageNumber: pageParam,
+        pageNumber: pageParam as number,
         queryParams,
       }),
     getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
@@ -64,10 +64,21 @@ export default function SearchPage() {
       lastPage.pageNumber === 0 ? lastPage.pageNumber : lastPage.pageNumber - 1,
   });
 
-  if (isFallback || !isReady) {
+  if (isFallback) {
     return (
       <PageContainer maxWidth="xl" backgroundName={sourceLanguage}>
-        <CircularProgress color="inherit" sx={{ flex: 1 }} />
+        {/* TODO: align other results pages to match this. To avoide CLS and for logical flow, it makes sense for this to be the first element. */}
+        <Typography variant="h2" component="h1" mb={1}>
+          {/* TODO: i18n */}
+          Search Results
+        </Typography>
+        <div>
+          <CircularProgress
+            aria-label="loading"
+            color="inherit"
+            sx={{ flex: 1 }}
+          />
+        </div>
       </PageContainer>
     );
   }
@@ -76,9 +87,13 @@ export default function SearchPage() {
     <PageContainer
       maxWidth="xl"
       backgroundName={sourceLanguage}
-      hasSidebar={true}
+      isQueryResultsPage
     >
-      <QueryPageTopStack />
+      <Typography variant="h2" component="h1" mb={1}>
+        {/* TODO: i18n */}
+        Search Results
+      </Typography>
+
       <SearchBoxWrapper sx={{ mb: 5 }}>
         {/* TODO: fix search OR add notification of search limitations (whole word only) */}
         <SearchBoxInput
@@ -87,17 +102,22 @@ export default function SearchPage() {
           variant="outlined"
           InputProps={{
             startAdornment: (
-              <IconButton onClick={() => handleOnSearch(searchTerm)}>
+              <IconButton
+                aria-label="Run search"
+                onClick={() => handleOnSearch(searchTerm)}
+              >
                 <Search />
               </IconButton>
             ),
             endAdornment: (
-              <IconButton onClick={() => setSearchTerm("")}>
+              <IconButton
+                aria-label="Clear search field"
+                onClick={() => setSearchTerm("")}
+              >
                 <Close />
               </IconButton>
             ),
           }}
-          // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
           fullWidth
           onChange={(event) => setSearchTerm(event.target.value)}
@@ -105,8 +125,19 @@ export default function SearchPage() {
         />
       </SearchBoxWrapper>
 
+      <QueryPageTopStack />
+
       {/* TODO: componentize search results */}
-      {!isLoading && (
+      {isLoading ? (
+        <div>
+          {/* TODO: i18n */}
+          <CircularProgress
+            aria-label="loading"
+            color="inherit"
+            sx={{ flex: 1 }}
+          />
+        </div>
+      ) : (
         <>
           {data ? (
             <>
@@ -153,7 +184,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     {
       locale,
     },
-    ["settings"]
+    ["settings", "common"],
   );
 
   return {

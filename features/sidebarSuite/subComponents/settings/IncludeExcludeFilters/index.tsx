@@ -20,14 +20,6 @@ import { JsonParam, useQueryParam } from "use-query-params";
 
 import { ListboxComponent, StyledPopper } from "./uiComponents";
 
-// TODO: Remove on BE naming update & key alignment
-const tempi18nLabelKeys = {
-  category_exclude: "excludeCollections",
-  category_include: "includeCollections",
-  file_exclude: "excludeTexts",
-  file_include: "includeTexts",
-};
-
 const IncludeExcludeFilters = () => {
   const { t } = useTranslation("settings");
 
@@ -38,25 +30,25 @@ const IncludeExcludeFilters = () => {
 
   const [limitsParam, setLimitsParam] = useQueryParam(
     uniqueSettings.queryParams.limits,
-    JsonParam
+    JsonParam,
   );
 
   const [limitsValue, setLimitsValue] = useState<LimitsParam>({});
 
   useEffect(
     () => setLimitsParam(limitsParam ?? defaultParamConfig.limits),
-    [limitsParam, setLimitsParam, defaultParamConfig]
+    [limitsParam, setLimitsParam, defaultParamConfig],
   );
 
   const handleInputChange = (
     limit: Limit,
-    value: (CategoryMenuItem | DatabaseText)[]
+    value: (CategoryMenuItem | DatabaseText)[],
   ) => {
     const otherLimits = omit({ ...limitsValue }, limit) as LimitsParam;
     const otherLimitParams = Object.keys(otherLimits).reduce((params, key) => {
       return {
         ...params,
-        [key]: otherLimits?.[key as Limit]!.map((limit) => limit.id),
+        [key]: otherLimits?.[key as Limit]!.map((limitItem) => limitItem.id),
       };
     }, {});
     const updatedLimitValues =
@@ -64,8 +56,11 @@ const IncludeExcludeFilters = () => {
     setLimitsValue(updatedLimitValues);
     setLimitsParam(
       Object.keys(updatedLimitValues).length > 0
-        ? { ...otherLimitParams, [limit]: value.map((limit) => limit.id) }
-        : undefined
+        ? {
+            ...otherLimitParams,
+            [limit]: value.map((limitItem) => limitItem.id),
+          }
+        : undefined,
     );
   };
 
@@ -99,8 +94,7 @@ const IncludeExcludeFilters = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  // @ts-expect-error i18n dynamic key issue see https://www.i18next.com/overview/typescript#text-type-error-template-literal
-                  label={t([`filtersLabels.${tempi18nLabelKeys[limit]}`])}
+                  label={t([`filtersLabels.${limit}`])}
                   InputProps={{
                     ...params.InputProps,
                     endAdornment: (

@@ -6,11 +6,11 @@ import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import { Footer } from "@components/layout/Footer";
 import { PageContainer } from "@components/layout/PageContainer";
 import { Paper, Typography } from "@mui/material";
-import { dehydrate } from "@tanstack/react-query";
-import { prefetchSourceTextBrowserData } from "features/sourceTextBrowserDrawer/apiQueryUtils";
+// import { dehydrate } from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
-import type { SourceLanguage } from "utils/constants";
+// import { prefetchDefaultDbPageData } from "utils/api/apiQueryUtils";
+// import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getSourceLanguageStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
@@ -34,20 +34,23 @@ export default function DbIndexPage() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
+export const getStaticProps: GetStaticProps = async ({
+  locale,
+  // params
+}) => {
   const i18nProps = await getI18NextStaticProps(
     {
       locale,
     },
-    ["db"]
+    ["db", "settings"],
   );
 
-  const queryClient = await prefetchSourceTextBrowserData(
-    params?.language as SourceLanguage
-  );
+  // const queryClient = await prefetchDefaultDbPageData(
+  //   params?.language as SourceLanguage,
+  // );
 
   return merge(
-    { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    // { props: { dehydratedState: dehydrate(queryClient) } },
+    i18nProps,
   );
 };

@@ -4,20 +4,21 @@
     "language": "Sprache"
   },
   "header": {
-    "support": "Unterstützung",
+    "guide": "Richtlinien",
     "database": "Datenbank"
   },
   "language": {
+    "all": "Alle",
     "pli": "Pāli",
-    "chn": "Chinese",
+    "chn": "Chinesisch",
     "skt": "Sanskrit",
-    "tib": "Tibetan"
+    "tib": "Tibetisch"
   },
   "footer": {
     "about": "Über",
     "introduction": "Einführung",
     "history": "Geschichte",
-    "guidelines": "Richtlinien",
+    "guide": "Richtlinien",
     "community": "Gemeinschaft",
     "institutions": "Institutionen",
     "people": "Personen",
@@ -38,10 +39,15 @@
     "backToNews": "Zurück zu Neuigkeiten"
   },
   "textBrowser": {
-    "label": "Source text browser"
+    "label": "Quelltext-Browser"
   },
   "prompts": {
-    "genericErrorTitle": "Something went wrong",
-    "genericErrorDescription": "Please contact us if the issue persists."
+    "genericErrorTitle": "Etwas ist schiefgelaufen.",
+    "genericErrorDescription": "Bitte kontaktieren Sie uns, wenn das Problem weiterhin besteht.",
+    "loading": "Wird geladen...",
+    "noResults": "Keine Ergebnisse gefunden."
+  },
+  "search": {
+    "placeholder": "Suche..."
   }
 }

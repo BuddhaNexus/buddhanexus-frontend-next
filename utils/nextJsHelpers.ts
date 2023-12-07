@@ -3,7 +3,11 @@ import type { UserConfig } from "next-i18next";
 import { serverSideTranslations } from "next-i18next/serverSideTranslations";
 
 import { getSourceTextMenuData } from "./api/menus";
-import { ALL_LOCALES, SOURCE_LANGUAGES, SourceLanguage } from "./constants";
+import {
+  SOURCE_LANGUAGES,
+  SourceLanguage,
+  SUPPORTED_LOCALES,
+} from "./constants";
 
 interface I18nProps {
   props: {
@@ -20,17 +24,15 @@ type Locale = { locale: string | undefined };
 
 export const getI18NextStaticProps: (
   { locale }: Locale,
-  extraNamespaces?: string[]
+  extraNamespaces?: string[],
 ) => Promise<I18nProps> = async (
   { locale }: Locale,
-  extraNamespaces: string[] = []
+  extraNamespaces: string[] = [],
 ) => {
   return {
     props: {
       ...(await serverSideTranslations(locale ?? "en", [
-        // @ts-expect-error type issues here
         "common",
-        // @ts-expect-error type issues here
         ...extraNamespaces,
       ])),
     },
@@ -38,7 +40,10 @@ export const getI18NextStaticProps: (
 };
 
 const sourceLanguagePaths = SOURCE_LANGUAGES.flatMap((language) =>
-  ALL_LOCALES.map((locale) => ({ params: { language }, locale }))
+  Object.keys(SUPPORTED_LOCALES).map((locale) => ({
+    params: { language },
+    locale,
+  })),
 );
 
 export const getSourceLanguageStaticPaths: GetStaticPaths = () => ({
@@ -53,7 +58,7 @@ export const getDbViewFileStaticPaths: GetStaticPaths = async () => {
   const chineseFilenames = chineseMenuData.map((menuData) => menuData.fileName);
   const sanskritMenuData = await getSourceTextMenuData(SourceLanguage.SANSKRIT);
   const sanskritFilenames = sanskritMenuData.map(
-    (menuData) => menuData.fileName
+    (menuData) => menuData.fileName,
   );
   const tibetanMenuData = await getSourceTextMenuData(SourceLanguage.TIBETAN);
   const tibetanFilenames = tibetanMenuData.map((menuData) => menuData.fileName);
@@ -77,8 +82,11 @@ export const getDbViewFileStaticPaths: GetStaticPaths = async () => {
   return {
     paths: allFilenames.flatMap(({ language, filenames }) =>
       filenames.flatMap((file) =>
-        ALL_LOCALES.map((locale) => ({ params: { language, file }, locale }))
-      )
+        Object.keys(SUPPORTED_LOCALES).map((locale) => ({
+          params: { language, file },
+          locale,
+        })),
+      ),
     ),
     fallback: true,
   };

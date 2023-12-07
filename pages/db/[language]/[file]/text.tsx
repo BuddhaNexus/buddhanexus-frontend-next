@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { GetStaticProps } from "next";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
 import { ErrorPage } from "@components/db/ErrorPage";
@@ -7,32 +7,64 @@ import { useDbView } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
-import { Typography } from "@mui/material";
-import { dehydrate, useQuery } from "@tanstack/react-query";
-import { prefetchSourceTextBrowserData } from "features/sourceTextBrowserDrawer/apiQueryUtils";
+import {
+  // dehydrate,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
+import TextView from "features/textView/TextView";
 import merge from "lodash/merge";
-import type { ApiGraphPageData } from "types/api/common";
+import type { PagedResponse } from "types/api/common";
+import type { TextPageData } from "types/api/text";
+// import { prefetchDbResultsPageData } from "utils/api/apiQueryUtils";
 import { DbApi } from "utils/api/dbApi";
-import type { SourceLanguage } from "utils/constants";
+// import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
 
+/**
+ * TODO
+ * 1. Display text on left side
+ * 2. Allow selection
+ * 3. Grab parallels for middle (https://buddhanexus2.kc-tbts.uni-hamburg.de/api/text-view/middle)
+ * 4. Display using table view components
+ * ?: use /text-view/text-parallels/
+ * * Split pane: use https://github.com/johnwalley/allotment
+ *
+ * @constructor
+ */
 export default function TextPage() {
   const { sourceLanguage, fileName, queryParams } = useDbQueryParams();
   const { isFallback } = useSourceFile();
+
   useDbView();
 
-  const { data, isLoading, isError } = useQuery<ApiGraphPageData>({
-    queryKey: DbApi.GraphView.makeQueryKey({ fileName, queryParams }),
-    queryFn: () =>
-      DbApi.GraphView.call({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { selectedSegment, ...paramsThatShouldRefreshText } = queryParams;
+
+  const { data, fetchNextPage, fetchPreviousPage, isLoading, isError } =
+    useInfiniteQuery<PagedResponse<TextPageData>>({
+      initialPageParam: 0,
+      queryKey: DbApi.TextView.makeQueryKey({
         fileName,
-        queryParams,
+        queryParams: paramsThatShouldRefreshText,
       }),
-    refetchOnWindowFocus: false,
-  });
+      queryFn: ({ pageParam }) =>
+        DbApi.TextView.call({
+          fileName,
+          queryParams,
+          pageNumber: pageParam as number,
+        }),
+      getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
+      getPreviousPageParam: (lastPage) =>
+        lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
+    });
+
+  const allData = useMemo(
+    () => (data ? data.pages.flatMap((page) => page.data) : []),
+    [data],
+  );
 
   if (isError) {
     return <ErrorPage backgroundName={sourceLanguage} />;
@@ -50,18 +82,18 @@ export default function TextPage() {
     <PageContainer
       maxWidth="xl"
       backgroundName={sourceLanguage}
-      hasSidebar={true}
+      isQueryResultsPage
     >
       <DbViewPageHead />
 
-      {isLoading ? (
+      {isLoading || !data ? (
         <CenteredProgress />
       ) : (
-        data?.piegraphdata.map(([name, count]) => (
-          <Typography key={name}>
-            {name}: {count}
-          </Typography>
-        ))
+        <TextView
+          data={allData}
+          onEndReached={fetchNextPage}
+          onStartReached={fetchPreviousPage}
+        />
       )}
 
       <SourceTextBrowserDrawer />
@@ -69,15 +101,22 @@ export default function TextPage() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
-  const i18nProps = await getI18NextStaticProps({ locale }, ["settings"]);
+export const getStaticProps: GetStaticProps = async ({
+  locale,
+  // params
+}) => {
+  const i18nProps = await getI18NextStaticProps({ locale }, [
+    "common",
+    "settings",
+  ]);
 
-  const queryClient = await prefetchSourceTextBrowserData(
-    params?.language as SourceLanguage
-  );
+  // const queryClient = await prefetchDbResultsPageData(
+  //   params?.language as SourceLanguage,
+  //   params?.file as string,
+  // );
 
   return merge(
-    { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    // { props: { dehydratedState: dehydrate(queryClient) } },
+    i18nProps,
   );
 };

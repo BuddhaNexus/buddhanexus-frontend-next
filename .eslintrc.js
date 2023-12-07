@@ -2,7 +2,8 @@ const eslintExtends = [
   "next/core-web-vitals",
   "eslint:all",
   "plugin:prettier/recommended",
-  "plugin:@typescript-eslint/all",
+  "plugin:@typescript-eslint/recommended-type-checked",
+  "plugin:@typescript-eslint/stylistic-type-checked",
   "plugin:jest/recommended",
   "plugin:unicorn/recommended",
   "plugin:react/recommended",
@@ -57,13 +58,12 @@ const rules = {
   "@typescript-eslint/explicit-function-return-type": "off",
   "@typescript-eslint/strict-boolean-expressions": "off",
   "@typescript-eslint/no-unnecessary-condition": "off",
-  "@typescript-eslint/no-magic-numbers": "off",
+  "no-magic-numbers": "off",
   "@typescript-eslint/no-unsafe-assignment": "off",
   "@typescript-eslint/no-unsafe-call": "off",
   "@typescript-eslint/no-unsafe-return": "off",
   "@typescript-eslint/no-unsafe-argument": "off",
   "@typescript-eslint/no-unsafe-member-access": "off",
-  "@typescript-eslint/sort-type-union-intersection-members": "off",
   "@typescript-eslint/explicit-module-boundary-types": "off",
   "@typescript-eslint/quotes": "off",
   "@typescript-eslint/no-explicit-any": "off",
@@ -90,7 +90,6 @@ const rules = {
   "@typescript-eslint/return-await": "off",
   "@typescript-eslint/non-nullable-type-assertion-style": "off",
   "@typescript-eslint/no-non-null-assertion": "off",
-  "@typescript-eslint/no-shadow": "off",
   "@typescript-eslint/method-signature-style": "off",
   "@typescript-eslint/no-empty-function": "off",
   "@typescript-eslint/object-curly-spacing": "off",
@@ -178,6 +177,14 @@ const rules = {
   "no-underscore-dangle": "off",
   "class-methods-use-this": "off",
   "func-style": "off",
+  "jsx-a11y/no-autofocus": [
+    2,
+    {
+      // focus order success criterion: https://www.w3.org/TR/UNDERSTANDING-WCAG20/navigation-mechanisms-focus-order.html
+      // TODO: review focus return handling.
+      ignoreNonDOM: true,
+    },
+  ],
 };
 
 module.exports = {
@@ -194,7 +201,7 @@ module.exports = {
       ],
       rules,
       parserOptions: {
-        project: ["./tsconfig.json"], // Specify it only for TypeScript files
+        project: true, // Specify it only for TypeScript files
       },
     },
   ],

@@ -15,7 +15,6 @@ import type {
 const { queryParams, local, remote } = uniqueSettings;
 
 // Not all filters, options and utilities are applicable for all DB languages and views. The setting menu assumes each setting component is to be rendered, unless defined in the following config objects listing contexts in which specific settings should be ommitted. For example, the `limits` filter should be shown in all cases except for graph view, in any language.
-
 export const DB_PAGE_FILTER_OMISSIONS_CONFIG: SettingOmissions<DbPageFilter> = {
   [queryParams.limits]: {
     [DbViewEnum.GRAPH]: ["allLangs"],
@@ -25,6 +24,12 @@ export const DB_PAGE_FILTER_OMISSIONS_CONFIG: SettingOmissions<DbPageFilter> = {
     [DbViewEnum.TABLE]: ["allLangs"],
     [DbViewEnum.TEXT]: ["allLangs"],
   },
+  [queryParams.multiLingual]: {
+    // TODO: for context see: https://github.com/BuddhaNexus/buddhanexus-frontend-next/pull/90#discussion_r1375272080
+    [DbViewEnum.GRAPH]: ["allLangs"],
+    [DbViewEnum.NUMBERS]: ["allLangs"],
+    [DbViewEnum.TABLE]: ["allLangs"],
+  },
 };
 
 const QUERIED_DISPLAY_OPTIONS_OMISSIONS_CONFIG: SettingOmissions<QueriedDisplayOption> =
@@ -33,11 +38,6 @@ const QUERIED_DISPLAY_OPTIONS_OMISSIONS_CONFIG: SettingOmissions<QueriedDisplayO
       // "folio" is used as "jump to" in text view and "only show" in other applicable views
       [DbViewEnum.GRAPH]: ["allLangs"],
     },
-    // [queryParams.multiLingual]: {
-    //   [DbViewEnum.GRAPH]: ["allLangs"],
-    //   [DbViewEnum.NUMBERS]: ["allLangs"],
-    //   [DbViewEnum.TABLE]: ["allLangs"],
-    // },
     [queryParams.sortMethod]: {
       [DbViewEnum.GRAPH]: ["allLangs"],
       [DbViewEnum.NUMBERS]: ["allLangs"],
@@ -98,7 +98,8 @@ export const DEFAULT_QUERY_PARAMS_VALUES: QueryParams = {
   sort_method: undefined,
   limits: undefined,
   target_collection: undefined,
-  // multi_lingual: undefined,
+  // multi_lingual is initialized at point of use with prefetched data (see `useQuery` fetch in `CurrentResultChips`).
+  multi_lingual: undefined,
   language: undefined,
   search_string: undefined,
 };
@@ -117,18 +118,17 @@ export const DEFAULT_PAR_LENGTH_VALUES: Record<SourceLanguage, number> = {
 };
 
 /**
- * Query params that only effect display (not number of results).
+ * Query params that only effect display (not number of results); counted in "Custom options" results page chip.
  */
-export const displaySettingChipQueries: string[] = [
+export const customOptionsChipQueries: string[] = [
   queryParams.folio,
-  // queryParams.multiLingual,
   queryParams.sortMethod,
 ];
 
 /**
- * Query params that are not counted as custom filter settings.
+ * Query params that are NOT counted in results page "Custom filters" chip.
  */
-export const filterChipQueryExclusions: string[] = [
-  ...displaySettingChipQueries,
+export const customFiltersChipQueryExclusions: string[] = [
+  ...customOptionsChipQueries,
   queryParams.searchString,
 ];

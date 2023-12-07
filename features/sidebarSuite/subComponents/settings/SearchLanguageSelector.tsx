@@ -5,18 +5,18 @@ import { StringParam, useQueryParam } from "use-query-params";
 import { SourceLanguage as SourceLanguageEnum } from "utils/constants";
 
 const SearchLanguageSelector = () => {
-  const { t } = useTranslation("settings");
+  const { t } = useTranslation(["common", "settings"]);
   const { uniqueSettings } = useDbQueryParams();
 
   const [currentLang, setCurrentDbLang] = useQueryParam(
     uniqueSettings.queryParams.language,
-    StringParam
+    StringParam,
   );
 
   return (
     <FormControl variant="filled" sx={{ width: 1, mb: 2 }}>
       <InputLabel id="db-language-selector-label" sx={{ mb: 1 }}>
-        {t(`dbLanguageLabels.instructions`)}
+        {t(`settings:generic.selectLanguage`)}
       </InputLabel>
       <Select
         labelId="db-language-selector-label"
@@ -24,16 +24,16 @@ const SearchLanguageSelector = () => {
         value={currentLang ?? "all"}
         onChange={(e) =>
           setCurrentDbLang(
-            e.target.value === "all" ? undefined : e.target.value
+            e.target.value === "all" ? undefined : e.target.value,
           )
         }
       >
         <MenuItem key="all" value="all">
-          {t(`dbLanguageLabels.all`)}
+          {t(`language.all`)}
         </MenuItem>
         {Object.values(SourceLanguageEnum).map((option) => (
           <MenuItem key={option} value={option}>
-            {t(`dbLanguageLabels.${option}`)}
+            {t(`language.${option}`)}
           </MenuItem>
         ))}
       </Select>

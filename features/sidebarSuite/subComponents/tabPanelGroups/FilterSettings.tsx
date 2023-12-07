@@ -7,6 +7,7 @@ import type { SidebarSuitePageContext } from "features/sidebarSuite/config/types
 import { StandinSetting } from "features/sidebarSuite/SidebarSuite";
 import {
   IncludeExcludeFilters,
+  MultiLingualSelector,
   ParLengthFilter,
   ScoreFilter,
   SearchLanguageSelector,
@@ -30,21 +31,21 @@ export const FilterSettings = ({
 
   const [currentLang] = useQueryParam(
     settingRenderGroups.searchPageFilter.language,
-    StringParam
+    StringParam,
   );
 
   const filters = useMemo(() => {
     const filterList = Object.values(
       pageType === "search"
         ? settingRenderGroups.searchPageFilter
-        : settingRenderGroups.dbPageFilter
+        : settingRenderGroups.dbPageFilter,
     );
 
     if (pageType === "search") {
       if (!currentLang || currentLang === "all") {
         return filterList.filter(
           // This value is linked to the "include exclude" param switch statement case below and is used to identify the whole block of filters
-          (value) => value !== uniqueSettings.queryParams.limits
+          (value) => value !== uniqueSettings.queryParams.limits,
         );
       }
       return filterList;
@@ -57,7 +58,7 @@ export const FilterSettings = ({
           settingName: filter,
           language: sourceLanguage,
           view: currentView,
-        })
+        }),
     );
   }, [
     pageType,
@@ -83,6 +84,9 @@ export const FilterSettings = ({
           }
           case uniqueSettings.queryParams.parLength: {
             return <ParLengthFilter key={key} />;
+          }
+          case uniqueSettings.queryParams.multiLingual: {
+            return <MultiLingualSelector key={key} />;
           }
           case uniqueSettings.queryParams.limits: {
             return <IncludeExcludeFilters key={key} />;

@@ -1,27 +1,27 @@
+// order sets appearance in sidebar
 export const searchPageFilter = {
   language: "language",
   search: "search_string",
   limits: "limits",
 } as const;
 
+// order sets appearance in sidebar
 export const dbPageFilter = {
   score: "score",
   parLength: "par_length",
+  multiLingual: "multi_lingual",
   limits: "limits",
   targetCollection: "target_collection",
 } as const;
 
 export const queriedDisplayOption = {
   folio: "folio",
-  // disabled pending spec. Reinstate in features/sidebarSuite/subComponents/tabPanelGroups/DisplayOptionsSection.tsx case when multiLingual is supported
-  // multiLingual: "multi_lingual",
   sortMethod: "sort_method",
 } as const;
 
 export const localDisplayOption = {
   script: "script",
-  // disabled pending review. Reinstate in features/sidebarSuite/subComponents/tabPanelGroups/DisplayOptionsSection.tsx case when multiLingual is supported
-  // multiLingual: "showAndPositionSegmentNrs",
+  // disabled pending review. Reinstate in features/sidebarSuite/subComponents/tabPanelGroups/DisplayOptionsSection.tsx case when showAndPositionSegmentNrs is supported
   // showAndPositionSegmentNrs: "showAndPositionSegmentNrs",
 } as const;
 
@@ -41,12 +41,12 @@ const queryParams = {
   score: dbPageFilter.score,
   parLength: dbPageFilter.parLength,
   targetCollection: dbPageFilter.targetCollection,
+  multiLingual: dbPageFilter.multiLingual,
   folio: queriedDisplayOption.folio,
-  // multiLingual: queriedDisplayOption.multiLingual,
   sortMethod: queriedDisplayOption.sortMethod,
 } as const;
 
-/** A results (.xmlx) download is triggered via an API endpoint, but is never set as a query param.
+/** Relies on an API endpoint, but a query param is not set.
  */
 const remote = {
   download: utilityOption.download,

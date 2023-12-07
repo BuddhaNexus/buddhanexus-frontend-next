@@ -20,14 +20,14 @@ type FooterSection = {
 
 const getFooterData: (
   t: TFunction,
-  locale: SupportedLocale
+  locale: SupportedLocale,
 ) => FooterSection[] = (t) => [
   {
     title: t("footer.about"),
     links: [
       { title: t("footer.introduction"), slug: "/introduction" },
       { title: t("footer.history"), slug: "/history" },
-      { title: t("footer.guidelines"), slug: "/guidelines" },
+      { title: t("footer.guide"), slug: "/guide" },
       { title: t("footer.contact"), slug: "/contact" },
     ],
   },
@@ -83,7 +83,12 @@ export const Footer = () => {
       >
         {footerData.map((footer) => (
           <Grid key={footer.title} xs={12} sm="auto" item>
-            <Typography variant="h6" color="text.primary" gutterBottom>
+            <Typography
+              component="h2"
+              variant="h6"
+              color="text.primary"
+              gutterBottom
+            >
               {footer.title}
             </Typography>
             <Container

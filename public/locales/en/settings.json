@@ -1,10 +1,19 @@
 {
+  "generic": {
+    "selectLanguage": "Select language",
+    "noSelection": "None selected",
+    "default": "Default"
+  },
   "resultsHead": {
-    "parallels": "Parallels: ",
     "matches": "Matches: ",
     "filters": "Custom filters: {{value}}",
     "options": "Custom options: {{value}}",
-    "reset": "Reset"
+    "settings": "Settings",
+    "settingsTip": "Toggle settings panel",
+    "reset": "Reset",
+    "resetTip": "Resort default settings",
+    "textSelect": "Change text",
+    "textSelectTip": "Select a new inquiry text"
   },
   "tabs": {
     "options": "Options",
@@ -18,13 +27,17 @@
   },
   "optionsLabels": {
     "script": "Select text script",
-    "folio": "Go to selected text section",
+    "folioAsGoTo": "Go to selected text section",
     "folioAsLimit": "Show matches from selected text section",
-    "sorting": "Sorting Method",
-    "sortDefault": "Default – Match position in source text",
-    "sortSource": "Match position in source text",
-    "sortParallel": "Match position in parallel texts",
-    "sortLength": "Length of character match (>)",
+    "folioShowAll": "Whole text",
+    "multiLingual": "Match text Languages",
+    "multiLingualError": "At least one language needs to be selected. Showing default results.",
+    "sort": {
+      "selector": "Sorting Method",
+      "position": "Default – Position in inquiry text",
+      "quoted-text":"Position in match texts",
+      "length2": "Length of character match (>)"
+    },
     "download": "Download results as xmlx file",
     "wylie": "Wylie",
     "unicode": "Unicode",
@@ -42,10 +55,10 @@
     "score": "Similarity Score:",
     "minMatch": "Minimum character/syllable matches length",
     "includeExcludeFilters": "Includes and Exclude items",
-    "excludeCollections": "Exclude collections",
-    "includeCollections": "Only include collections",
-    "excludeTexts": "Exclude texts",
-    "includeTexts": "Only include texts"
+    "category_exclude": "Exclude collections",
+    "category_include": "Only include collections",
+    "file_exclude": "Exclude texts",
+    "file_include": "Only include texts"
   },
   "dbViewLabels": {
     "view": "View",
@@ -53,13 +66,5 @@
     "numbers": "Numbers",
     "table": "Table",
     "text": "Text"
-  },
-  "dbLanguageLabels": {
-    "instructions": "Database language",
-    "all": "All",
-    "pli": "Pāli",
-    "chn": "Chinese",
-    "skt": "Sanskrit",
-    "tib": "Tibetan"
   }
 }

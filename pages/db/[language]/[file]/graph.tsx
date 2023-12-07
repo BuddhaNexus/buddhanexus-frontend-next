@@ -8,13 +8,16 @@ import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
 import { Typography } from "@mui/material";
-import { dehydrate, useQuery } from "@tanstack/react-query";
-import { prefetchSourceTextBrowserData } from "features/sourceTextBrowserDrawer/apiQueryUtils";
+import {
+  // dehydrate,
+  useQuery,
+} from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
 import type { ApiGraphPageData } from "types/api/common";
+// import { prefetchDbResultsPageData } from "utils/api/apiQueryUtils";
 import { DbApi } from "utils/api/dbApi";
-import type { SourceLanguage } from "utils/constants";
+// import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
@@ -31,7 +34,6 @@ export default function GraphPage() {
         fileName,
         queryParams,
       }),
-    refetchOnWindowFocus: false,
   });
 
   if (isError) {
@@ -50,7 +52,7 @@ export default function GraphPage() {
     <PageContainer
       maxWidth="xl"
       backgroundName={sourceLanguage}
-      hasSidebar={true}
+      isQueryResultsPage
     >
       <DbViewPageHead />
 
@@ -68,15 +70,22 @@ export default function GraphPage() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
-  const i18nProps = await getI18NextStaticProps({ locale }, ["settings"]);
+export const getStaticProps: GetStaticProps = async ({
+  locale,
+  // params
+}) => {
+  const i18nProps = await getI18NextStaticProps({ locale }, [
+    "common",
+    "settings",
+  ]);
 
-  const queryClient = await prefetchSourceTextBrowserData(
-    params?.language as SourceLanguage
-  );
+  // const queryClient = await prefetchDbResultsPageData(
+  //   params?.language as SourceLanguage,
+  //   params?.file as string,
+  // );
 
   return merge(
-    { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    // { props: { dehydratedState: dehydrate(queryClient) } },
+    i18nProps,
   );
 };

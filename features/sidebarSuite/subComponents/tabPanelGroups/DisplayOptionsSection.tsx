@@ -37,7 +37,7 @@ export const DisplayOptionsSection = () => {
           settingName: option,
           language: sourceLanguage,
           view: currentView,
-        })
+        }),
     );
   }, [
     settingRenderGroups,
@@ -62,7 +62,6 @@ export const DisplayOptionsSection = () => {
       <DbViewSelector />
       {options.map((option) => {
         const key = `display-option-${option}`;
-        // SEE: features/sidebarSuite/config/settings.ts for suspended setting info
 
         switch (option) {
           case uniqueSettings.queryParams.folio: {
@@ -71,11 +70,7 @@ export const DisplayOptionsSection = () => {
           case uniqueSettings.queryParams.sortMethod: {
             return <SortOption key={key} />;
           }
-          // case uniqueSettings.queryParams.multiLingual: {
-          //   return (
-          //     <React.Fragment key={key}>{StandinSetting("multi_lingual")}</React.Fragment>
-          //   );
-          // }
+          // SEE: features/sidebarSuite/config/settings.ts for suspended setting info
           case uniqueSettings.local.script: {
             return <TextScriptOption key={key} />;
           }

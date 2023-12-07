@@ -13,7 +13,7 @@ import {
   Link,
   Tooltip,
 } from "@mui/material";
-import type { ApiTextSegment } from "types/api/table";
+import type { ApiTextSegment } from "types/api/common";
 import type { SourceLanguage } from "utils/constants";
 
 import { ParallelSegmentText } from "./ParallelSegmentText";
@@ -68,7 +68,7 @@ export const ParallelSegment = ({
           {/* File Name */}
           <Tooltip title={displayName} PopperProps={{ disablePortal: true }}>
             <Link
-              href={`/db/text/${language}/${textName}?segment=${segmentName}`}
+              href={`/db/${language}/${textName}/text?selectedSegment=${segmentName}`}
               sx={{ display: "inline-block", wordBreak: "break-word", m: 0.5 }}
             >
               {textSegmentNumbers}

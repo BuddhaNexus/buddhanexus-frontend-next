@@ -1,33 +1,33 @@
-import { useSearchParams } from "next/navigation";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import { Typography } from "@mui/material";
-import { EwtsConverter } from "tibetan-ewts-converter";
-import type { ApiTextSegment } from "types/api/table";
+import { scriptSelectionAtom } from "features/atoms";
+import { enscriptText } from "features/sidebarSuite/common/dbSidebarHelpers";
+import { useAtomValue } from "jotai";
+import type { ApiTextSegment } from "types/api/common";
 
 interface Props {
   text: ApiTextSegment[];
 }
 
 export const ParallelSegmentText = ({ text }: Props) => {
-  // let { EwtsConverter } = require("tibetan-ewts-converter");
-  const ewts = new EwtsConverter();
-
-  const { uniqueSettings } = useDbQueryParams();
-  const scriptParam = useSearchParams().get(uniqueSettings.local.script);
+  const { sourceLanguage } = useDbQueryParams();
+  const script = useAtomValue(scriptSelectionAtom);
 
   return (
     <>
-      {text.map(({ text, highlightColor }) => {
-        const renderText =
-          scriptParam === "Wylie" ? ewts.to_unicode(text) : text;
+      {text.map(({ text: segmentText, highlightColor }) => {
         return (
           <Typography
-            key={text}
+            key={segmentText}
             sx={{ display: "inline" }}
             fontWeight={highlightColor === 1 ? 600 : 400}
             color={highlightColor === 1 ? "text.primary" : "text.secondary"}
           >
-            {renderText}
+            {enscriptText({
+              text: segmentText,
+              script,
+              language: sourceLanguage,
+            })}
           </Typography>
         );
       })}

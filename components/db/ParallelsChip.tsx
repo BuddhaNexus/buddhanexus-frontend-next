@@ -11,19 +11,25 @@ export default function ParallelsChip() {
 
   const { fileName, queryParams } = useDbQueryParams();
 
+  // ignore some params that shouldn't result in refetching this query
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { selectedSegment, ...restOfQueryParams } = queryParams;
+
   const { data, isLoading } = useQuery({
     // TODO: - see if the query can return result before main results
-    queryKey: DbApi.ParallelCount.makeQueryKey({ fileName, queryParams }),
+    queryKey: DbApi.ParallelCount.makeQueryKey({
+      fileName,
+      queryParams: restOfQueryParams,
+    }),
     queryFn: () =>
       DbApi.ParallelCount.call({
         fileName,
         queryParams,
       }),
-    refetchOnWindowFocus: false,
   });
 
   const [parallelCount, setParallelCount] = useState(
-    isLoading ? 0 : data?.parallel_count
+    isLoading ? 0 : data?.parallel_count,
   );
 
   useEffect(() => {
@@ -37,7 +43,7 @@ export default function ParallelsChip() {
       size="small"
       label={
         <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-          <Box>{t("resultsHead.parallels")}</Box>
+          <Box>{t("resultsHead.matches")}</Box>
           <Box sx={{ minWidth: "2ch", ml: "3px", textAlign: "center" }}>
             {parallelCount}
           </Box>

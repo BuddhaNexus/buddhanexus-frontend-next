@@ -8,14 +8,16 @@ import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
 // import type { NumbersPageData } from "utils/api/numbers";
-import { dehydrate, useInfiniteQuery } from "@tanstack/react-query";
+import {
+  // dehydrate,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import NumbersView from "features/numbersView/NumbersView";
-import { prefetchSourceTextBrowserData } from "features/sourceTextBrowserDrawer/apiQueryUtils";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
 import type { ApiNumbersPageData, PagedResponse } from "types/api/common";
 import { DbApi } from "utils/api/dbApi";
-import type { SourceLanguage } from "utils/constants";
+// import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
@@ -25,19 +27,19 @@ export default function NumbersPage() {
   const { isFallback } = useSourceFile();
   useDbView();
 
-  const { data, fetchNextPage, fetchPreviousPage, isInitialLoading, isError } =
+  const { data, fetchNextPage, fetchPreviousPage, isLoading, isError } =
     useInfiniteQuery<PagedResponse<ApiNumbersPageData>>({
+      initialPageParam: 0,
       queryKey: DbApi.NumbersView.makeQueryKey({ fileName, queryParams }),
-      queryFn: ({ pageParam = 0 }) =>
+      queryFn: ({ pageParam }) =>
         DbApi.NumbersView.call({
           fileName,
           queryParams,
-          pageNumber: pageParam,
+          pageNumber: pageParam as number,
         }),
       getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
       getPreviousPageParam: (lastPage) =>
         lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
-      refetchOnWindowFocus: false,
     });
 
   if (isError) {
@@ -56,14 +58,14 @@ export default function NumbersPage() {
     <PageContainer
       maxWidth="xl"
       backgroundName={sourceLanguage}
-      hasSidebar={true}
+      isQueryResultsPage
     >
       <DbViewPageHead />
 
       {/* Just printing some example data: */}
       {/* The deta should probably be transformed according to our needs before using it here. */}
 
-      {isInitialLoading || !data ? (
+      {isLoading || !data ? (
         <CenteredProgress />
       ) : (
         <div style={{ height: "100vh" }}>
@@ -79,15 +81,22 @@ export default function NumbersPage() {
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
-  const i18nProps = await getI18NextStaticProps({ locale }, ["settings"]);
+export const getStaticProps: GetStaticProps = async ({
+  locale,
+  // params
+}) => {
+  const i18nProps = await getI18NextStaticProps({ locale }, [
+    "common",
+    "settings",
+  ]);
 
-  const queryClient = await prefetchSourceTextBrowserData(
-    params?.language as SourceLanguage
-  );
+  // const queryClient = await prefetchDbResultsPageData(
+  //   params?.language as SourceLanguage,
+  //   params?.file as string,
+  // );
 
   return merge(
-    { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    // { props: { dehydratedState: dehydrate(queryClient) } },
+    i18nProps,
   );
 };

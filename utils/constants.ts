@@ -1,3 +1,6 @@
+import type { SupportedLocales } from "types/i18next";
+
+// eslint-disable-next-line no-shadow
 export enum SourceLanguage {
   PALI = "pli",
   CHINESE = "chn",
@@ -13,4 +16,7 @@ export const SOURCE_LANGUAGES = [
 ];
 
 // i18n
-export const ALL_LOCALES = ["en", "de"];
+export const SUPPORTED_LOCALES: SupportedLocales = {
+  en: "English",
+  de: "Deutsch",
+};

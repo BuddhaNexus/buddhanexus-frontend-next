@@ -59,12 +59,11 @@ const logos: Record<string, StaticImageData> = {
 export const ExternalLinksSection = () => {
   const { fileName } = useDbQueryParams();
   const { t } = useTranslation("settings");
-  const theme = useTheme();
+  const materialTheme = useTheme();
 
   const { data } = useQuery({
     queryKey: [DbApi.ExternalLinksData.makeQueryKey(fileName)],
-    queryFn: () => DbApi.ExternalLinksData.call(fileName),
-    refetchOnWindowFocus: false,
+    queryFn: () => DbApi.ExternalLinksData.call({ fileName }),
   });
 
   // TODO: sort out dark theme icons, http://localhost:3000/db/tib/K01D0003_H0003/table
@@ -86,7 +85,7 @@ export const ExternalLinksSection = () => {
                     title={key}
                   >
                     {key === "cbc" ? (
-                      <CBCIcon fill={theme.palette.text.primary} />
+                      <CBCIcon fill={materialTheme.palette.text.primary} />
                     ) : (
                       <Image
                         src={logos[key]!}
@@ -96,7 +95,7 @@ export const ExternalLinksSection = () => {
                     )}
                   </SourceLink>
                 </ListItem>
-              )
+              ),
           )}
         </List>
       </>
