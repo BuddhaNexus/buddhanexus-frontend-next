@@ -64,8 +64,11 @@ export async function getNumbersData({
   const { data } = await apiClient.POST("/numbers-view/numbers", {
     body: {
       file_name: fileName,
+      score: 30,
+      par_length: 30,
+      sort_method: "position",
       ...parseDbPageQueryParams(queryParams),
-      page: 0,
+      page: pageNumber,
     },
   });
   // TODO: - remove type casting once response model is added to api

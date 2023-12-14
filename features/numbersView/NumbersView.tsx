@@ -13,6 +13,15 @@ import {
 } from "@mui/material";
 // import type { NumbersPageData } from "utils/api/numbers";
 
+/*
+
+¡¡¡
+PAGE IN DEVELOPMENT 
+TODO: remove eslint-disable
+!!!
+
+*/
+
 interface Props {
   data: any;
   // data: NumbersPageData;
@@ -40,8 +49,23 @@ export default function NumbersView({
   onEndReached,
   onStartReached,
 }: Props) {
-  const headers = React.useMemo(() => data.slice(0, 1).flat(), [data]);
+  const headers = React.useMemo(
+    () => [{ segment: "Segment ID" }, ...data[0].collections.flat()],
+    [data],
+  );
 
+  const rows = [];
+
+  data[0].segments.forEach((segment: any) => {
+    rows.push(segment.segmentnr);
+
+    headers.forEach((header: any) => {
+      header[segment.segmentnr] = segment[header.segment];
+    });
+  });
+
+  /* eslint-disable no-console */
+  console.log("headers data", headers);
   return (
     <TableVirtuoso
       data={data.slice(1)}
@@ -64,42 +88,30 @@ export default function NumbersView({
       fixedHeaderContent={() => {
         const headerRow = React.Children.toArray(
           headers.map((item: any) => {
-            return Object.entries(item).map(([id, value]) => {
-              return id === "segmentnr" ? (
-                <TableCell style={{ background: "white" }}>
-                  Segment ID
-                </TableCell>
-              ) : (
-                <TableCell
-                  style={{ background: "white" }}
-                  title={value as string}
-                >
-                  {id.toUpperCase()}
-                </TableCell>
-              );
-            });
-          })
+            return Object.entries(item).map(([id, value]) => (
+              <TableCell
+                style={{ background: "white" }}
+                title={value as string}
+              >
+                {id.toUpperCase()}
+              </TableCell>
+            ));
+          }),
         );
 
         return <TableRow>{headerRow}</TableRow>;
       }}
-      itemContent={(index, parallel) => {
-        const row = React.Children.toArray(
-          Object.entries(parallel).map(([id, value]) => {
-            if (id === "segmentnr") {
-              return <TableCell>value</TableCell>;
-            }
-            return Array.isArray(value) && value.length > 0 ? (
-              <TableCell key={id}>
-                {value[0]}&nbsp;– {value.slice(-1)}
-              </TableCell>
-            ) : (
-              <TableCell key={id}> </TableCell>
-            );
-          })
-        );
+      itemContent={() => {
+        const rowItems = data[0].segments.map((segment: any) => segment);
 
-        return row ? <>{row}</> : <TableCell />;
+        return rowItems ? (
+          <>
+            <TableCell> </TableCell>
+            {rowItems}
+          </>
+        ) : (
+          <TableCell />
+        );
       }}
     />
   );
