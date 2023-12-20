@@ -59,7 +59,6 @@ jobs:
         if: failure()
         run: |
           cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
-          echo "cypress_imgs=${cypress_imgs[@]}"
           imgkit_responses=()
           for img in ${cypress_imgs[@]}; do
             echo "Uploading $img"
@@ -75,6 +74,7 @@ jobs:
         if: failure()
         uses: actions/github-script@v5
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.split('\n');
             
