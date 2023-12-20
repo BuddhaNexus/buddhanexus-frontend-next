@@ -37,54 +37,29 @@ jobs:
           build: yarn build:skip
           start: yarn start
           browser: chrome
-
-      - name: Set up git
-        if: failure()
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Action"
-
-      - name: Check if branch exists
-        id: check-branch
-        if: failure()
-        run: |
-          if git ls-remote --exit-code --heads origin actions-pr-${{ github.event.pull_request.number }}; then
-            echo "Branch exists"
-            echo "branch_exists=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout screenshot branch
-        if: failure()
-        run: |
-          if [ ${{ steps.check-branch.outputs.branch_exists }} ]; then
-            git fetch origin
-            git checkout origin/actions-pr-${{ github.event.pull_request.number }}
-          else
-            git checkout -b actions-pr-${{ github.event.pull_request.number }}
-          fi
       
       - name: Find and rename screenshots
         id: list
         if: failure()
         run: |
           imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
-          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots\/screenshot${i+1}.png/")"; done))
+          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots-${{ github.job }}\/screenshot${i+1}.png/")"; done))
           echo "Cypress Screenshots:"
-          for i in "${!imgs[@]}"; do 
+          for i in "${!imgs[@]}"; do  
             mv "${imgs[$i]}" "${renamed_imgs[$i]}"; 
             echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
           done
 
-      - name: Commit screenshots
-        if: failure()
-        run: |
-          git add cypress/results/screenshots/*.png
-          git commit -m "Add screenshots"
-
-      - name: Push changes
-        if: ${{ !steps.check-branch.outputs.branch_exists }}
-        run: |
-          git push origin actions-pr-${{ github.event.pull_request.number }}
+      - name: Push to cypress-testing repository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          source-directory: 'cypress/results'
+          destination-github-username: 'BuddhaNexus'
+          destination-repository-name: 'cypress-testing'
+          user-email: actions@github.com
+          target-branch: main
 
       - name: Create comment with screenshots
         if: failure()
@@ -93,11 +68,11 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const screenshotsDir = 'cypress/results/screenshots';
+            const screenshotsDir = 'cypress/results/screenshots-${{ github.job }}';
             const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
               const filePath = path.join(screenshotsDir, file);
-              const url = `https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/actions-pr-${context.issue.number}/${filePath}`;
-              return `![${file}](${url}?token=${process.env.GITHUB_TOKEN})`;
+              const url = `https://github.com/BuddhaNexus/cypress-testing/blob/main/${filePath}`;
+              return `![${file}](${url}`;
             });
             const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
             github.rest.issues.createComment({
