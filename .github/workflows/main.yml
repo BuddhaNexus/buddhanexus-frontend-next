@@ -52,13 +52,19 @@ jobs:
             echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
           done
 
-      - name: Push to cypress-testing repository
+      - name: Checkout cypress-output repository
+        if: failure()
+        uses: actions/checkout@v4
+        with:
+          repository: BuddhaNexus/cypress-output
+          path: ./cypress-output
+
+      - name: Add to cypress-output repository
+        if: failure()
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: failure()
         run: |
-          git clone https://user:$GITHUB_TOKEN@github.com/BuddhaNexus/cypress-testing
-          cd cypress-testing
+          cd cypress-output
           cp -r ../cypress/results .
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Action"
@@ -78,7 +84,7 @@ jobs:
             const screenshotsDir = 'cypress/results/screenshots-${{ github.head_ref }}';
             const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
               const filePath = path.join(screenshotsDir, file);
-              const url = `https://github.com/BuddhaNexus/cypress-testing/blob/main/${filePath}`;
+              const url = `https://github.com/BuddhaNexus/cypress-output/blob/main/${filePath}`;
               return `![${file}](${url}`;
             });
             const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
