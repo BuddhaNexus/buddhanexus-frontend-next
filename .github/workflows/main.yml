@@ -24,6 +24,8 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: install
     steps:
       - uses: actions/checkout@v4
