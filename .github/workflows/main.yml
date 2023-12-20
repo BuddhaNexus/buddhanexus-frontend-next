@@ -46,19 +46,22 @@ jobs:
         if: failure()
         run: |
           imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
-          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
+          cypress_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
           echo "Cypress Screenshots:"
           for i in "${!imgs[@]}"; do  
-            mv "${imgs[$i]}" "${renamed_imgs[$i]}"; 
-            echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
+            mv "${imgs[$i]}" "${cypress_imgs[$i]}"; 
+            echo "${imgs[$i]}  >>>   ${cypress_imgs[$i]}"; 
           done
+          echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
 
       - name: Upload screenshots to image host
         id: upload-screenshots
-        if: failure()
+        if: steps.list.outcome == 'success'
         run: |
+          cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
+          echo "cypress_imgs=${cypress_imgs[@]}"
           imgkit_responses=()
-          for img in ${renamed_imgs[@]}; do
+          for img in ${cypress_imgs[@]}; do
             echo "Uploading $img"
             response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
               -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
