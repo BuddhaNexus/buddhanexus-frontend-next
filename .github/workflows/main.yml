@@ -71,9 +71,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd cypress-output
+          git config --unset-all http.https://github.com/.extraheader
           git config user.email '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
           git config user.name '${{ github.actor }}'
-          git config --unset-all http.https://github.com/.extraheader
           git add -A
           git commit -m "Add cypress media results for ${{ github.run_id }}"
           git push origin main
