@@ -52,16 +52,20 @@ jobs:
           done
 
       - name: Push to cypress-testing repository
-        if: failure()
-        uses: cpina/github-action-push-to-another-repository@main
         env:
-          API_TOKEN_GITHUB: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          source-directory: 'cypress/results'
-          destination-github-username: 'BuddhaNexus'
-          destination-repository-name: 'cypress-testing'
-          user-email: actions@github.com
-          target-branch: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: failure()
+        run: |
+          git clone https://github.com/BuddhaNexus/cypress-testing.git
+          cd cypress-testing
+          cp ../cypress/results .
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Action"
+          git config --unset-all http.https://github.com/.extraheader
+          git add -A
+          git commit -m "Add cypress media results for ${{ github.head_ref }}"
+          git push origin main
+
 
       - name: Create comment with screenshots
         if: failure()
@@ -70,7 +74,7 @@ jobs:
           script: |
             const fs = require('fs');
             const path = require('path');
-            const screenshotsDir = 'cypress/results/screenshots-${{ github.job }}';
+            const screenshotsDir = 'cypress/results/screenshots-${{ github.head_ref }}';
             const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
               const filePath = path.join(screenshotsDir, file);
               const url = `https://github.com/BuddhaNexus/cypress-testing/blob/main/${filePath}`;
