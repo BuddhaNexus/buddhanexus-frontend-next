@@ -59,14 +59,14 @@ jobs:
         run: |
           imgkit_responses=()
           for img in ${renamed_imgs[@]}; do
+            echo "Uploading $img"
             response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
               -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
               -F "file=@$img;type=image/png" \
               -F "fileName=$(basename $img)")
             imgkit_responses+=("$response")
           done
-          echo "::set-output name=imgkit_responses::${imgkit_responses[@]}"
-        continue-on-error: true
+          echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
 
       - name: Extract image data and create comment
         if: steps.upload-screenshots.outcome == 'success'
