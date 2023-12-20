@@ -41,63 +41,49 @@ jobs:
           start: yarn start
           browser: chrome
       
-      - name: Find and rename screenshots
+      - name: Find and rename cypress fail screenshots
         id: list
         if: failure()
         run: |
-          mkdir cypress/results/screenshots-${{ github.run_id }}
           imgs=$(find cypress/results/screenshots -type f -name '*.png' | xargs)
-          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots-${{ github.run_id }}\/screenshot${i+1}.png/")"; done))
+          renamed_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/results\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
           echo "Cypress Screenshots:"
           for i in "${!imgs[@]}"; do  
             mv "${imgs[$i]}" "${renamed_imgs[$i]}"; 
             echo "${imgs[$i]}  >>>   ${renamed_imgs[$i]}"; 
           done
 
-      - name: Checkout cypress-output repository
-        if: failure()
-        uses: actions/checkout@v4
-        with:
-          repository: BuddhaNexus/cypress-output
-          path: ./cypress-output
-
-      - name: Copy Cypress media to cypress-output
+      - name: Upload screenshots to image host
+        id: upload-screenshots
         if: failure()
         run: |
-          cp -r cypress/results cypress-output/
-    
+          imgkit_responses=()
+          for img in ${renamed_imgs[@]}; do
+            response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
+              -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
+              -F "file=@$img;type=image/png" \
+              -F "fileName=$(basename $img)")
+            imgkit_responses+=("$response")
+          done
+          echo "::set-output name=imgkit_responses::${imgkit_responses[@]}"
+        continue-on-error: true
 
-      - name: Add to cypress-output repository
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd cypress-output
-          git config user.email '${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com'
-          git config user.name '${{ github.actor }}'
-          git config credential.helper '!f() { echo "username=x-access-token"; echo "password=${GITHUB_TOKEN}"; }; f'
-          git add -A
-          git commit -m "Add cypress results media for run ${{ github.run_id }}"
-          git push origin main
-
-
-      - name: Create comment with screenshots
-        if: failure()
+      - name: Extract image data and create comment
+        if: steps.upload-screenshots.outcome == 'success'
         uses: actions/github-script@v5
         with:
           script: |
-            const fs = require('fs');
-            const path = require('path');
-            const screenshotsDir = 'cypress/results/screenshots-${{ github.run_id }}';
-            const screenshots = fs.readdirSync(screenshotsDir).filter(file => file.endsWith('.png')).map(file => {
-              const filePath = path.join(screenshotsDir, file);
-              const url = `https://github.com/BuddhaNexus/cypress-output/blob/main/${filePath}`;
-              return `![${file}](${url}`;
-            });
-            const body = `## Cypress Screenshots\n\n${screenshots.join('\n')}`;
+            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.split('\n');
+            
+            const body = `## ImageKit Screenshots\n\n${imgkitResponses.map(response => {
+              const { name, url } = JSON.parse(response);
+              return `![${name}](${url})`;
+            }).join('\n')}`;
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: body
             });
+  
