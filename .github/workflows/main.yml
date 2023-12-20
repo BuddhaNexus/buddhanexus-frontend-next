@@ -56,7 +56,7 @@ jobs:
 
       - name: Upload screenshots to image host
         id: upload-screenshots
-        if: steps.list.outcome == 'success'
+        if: failure()
         run: |
           cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
           echo "cypress_imgs=${cypress_imgs[@]}"
@@ -72,7 +72,7 @@ jobs:
           echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
 
       - name: Extract image data and create comment
-        if: steps.upload-screenshots.outcome == 'success'
+        if: failure()
         uses: actions/github-script@v5
         with:
           script: |
