@@ -75,11 +75,14 @@ jobs:
         if: failure()
         uses: actions/github-script@v5
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.split('\n');
+
+            if (imgkitResponses.length === 0) {
+              return;
+            }
             
-            const body = `## ImageKit Screenshots\n\n${imgkitResponses.map(response => {
+            const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
               const { name, url } = JSON.parse(response);
               return `![${name}](${url})`;
             }).join('\n')}`;
