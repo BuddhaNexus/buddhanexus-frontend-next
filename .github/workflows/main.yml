@@ -45,7 +45,10 @@ jobs:
         id: list
         if: failure()
         run: |
-          imgs=$(find cypress/output/screenshots -type f -name '*.png' | xargs)
+          while IFS= read -r line; do
+            imgs+=("$line")
+          done < <(find cypress/output/screenshots -type f -name '*.png')
+          echo "${#imgs[@]} screenshots found"
           cypress_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/output\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
           echo "Cypress Screenshots:"
           for i in "${!imgs[@]}"; do  
@@ -75,12 +78,13 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.split('\n');
+            const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
+            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
             if (imgkitResponses.length === 0) {
               return;
             }
-            
+
             const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
               const { name, url } = JSON.parse(response);
               return `![${name}](${url})`;
@@ -92,4 +96,5 @@ jobs:
               repo: context.repo.repo,
               body: body
             });
-  
+            
+     
