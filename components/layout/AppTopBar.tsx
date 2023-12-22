@@ -132,6 +132,7 @@ export const AppTopBar = () => {
             {sourceLanguage && (
               <IconButton
                 color="inherit"
+                aria-label={`Explore the ${sourceLanguage} database collection`}
                 onClick={() => setIsDrawerOpen((isOpen) => !isOpen)}
               >
                 <ExploreOutlinedIcon sx={{ fontSize: 28 }} />

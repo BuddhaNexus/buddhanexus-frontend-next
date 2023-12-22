@@ -1,6 +1,7 @@
 import "cypress/support/commands";
 
-import { otherLocales, runBasicPageTests } from "cypress/support/utils";
+import { runBasicPageTests } from "cypress/support/tests";
+import { otherLocales } from "cypress/support/utils";
 import { searchPageFilter } from "features/sidebarSuite/config/settings";
 import { SOURCE_LANGUAGES } from "utils/constants";
 
@@ -16,19 +17,6 @@ describe("Static routes", () => {
 
     otherLocales.forEach((locale) => {
       runBasicPageTests(`/${locale}`);
-    });
-  });
-
-  it("renders accessible, search page in dark and light mode and all locals", () => {
-    const url = `/search?${searchPageFilter.search}=${encodeURI(
-      "Kacci pana vo, anuruddhā, samaggā sammodamānā",
-    )}`;
-    runBasicPageTests(url);
-
-    // TODO
-
-    otherLocales.forEach((locale) => {
-      runBasicPageTests(`/${locale}/${url}`);
     });
   });
 
@@ -52,6 +40,19 @@ describe("Static routes", () => {
           runBasicPageTests(`/${locale}/${path}`);
         });
       });
+    });
+  });
+
+  it("renders accessible, search page in dark and light mode and all locals", () => {
+    const url = `/search?${searchPageFilter.search}=${encodeURI(
+      "Kacci pana vo, anuruddhā, samaggā sammodamānā",
+    )}`;
+    runBasicPageTests(url);
+
+    // TODO
+
+    otherLocales.forEach((locale) => {
+      runBasicPageTests(`/${locale}/${url}`);
     });
   });
 });

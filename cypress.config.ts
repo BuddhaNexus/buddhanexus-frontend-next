@@ -18,5 +18,6 @@ export default defineConfig({
     responseTimeout: 60000,
     screenshotsFolder: "cypress/output/screenshots",
     videosFolder: "cypress/output/videos",
+    viewportWidth: 1280,
   },
 });

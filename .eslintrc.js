@@ -185,6 +185,8 @@ const rules = {
       ignoreNonDOM: true,
     },
   ],
+  // https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/valid-expect.md — Cypress docs show this is an invalid complaint
+  "jest/valid-expect": "off",
 };
 
 module.exports = {
