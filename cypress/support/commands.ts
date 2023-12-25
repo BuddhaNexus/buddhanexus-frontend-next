@@ -43,6 +43,15 @@ Cypress.Commands.add("readDirectory", (directory: string) => {
 Cypress.Commands.add("getByTestId", (id, ...args) => {
   return cy.get(`[data-testid=${id}]`, ...args);
 });
+Cypress.Commands.add("getAndRegisterByTestId", (id, title, ...args) => {
+  return cy.get(`[data-testid=${id}]`, ...args).then(($element) => {
+    if (!Array.isArray(Cypress.env('testedElements'))) {
+      Cypress.env('testedElements', []);
+     }
+     Cypress.env('testedElements').push({ title, element: $element });
+     return cy.wrap($element);
+  });
+});
 
 Cypress.Commands.add("visitWithAxe", (path: string) => {
   return cy.visit(path).injectAxe();
@@ -58,6 +67,15 @@ declare global {
        */
       getByTestId(
         dataTestAttribute: string,
+        args?: any
+      ): Chainable<JQuery<HTMLElement>>;
+      /**
+       * Custom command to select DOM element by data-testid attribute and add it to the Cypress.env testedElements array so it highlighted in test failures screenshots.
+       * @example cy.getAndRegisterByTestId("theme-toggle", this.currentTest?.title)
+       */
+      getAndRegisterByTestId(
+        dataTestAttribute: string,
+        title: string | undefined,
         args?: any
       ): Chainable<JQuery<HTMLElement>>;
       /**
