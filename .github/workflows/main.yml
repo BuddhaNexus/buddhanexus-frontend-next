@@ -40,30 +40,48 @@ jobs:
           build: yarn build:skip
           start: yarn start
           browser: chrome
-      
+
       - name: Find and rename cypress fail screenshots
         id: list
         if: failure()
         run: |
-          while IFS= read -r line; do
-            imgs+=("$line")
-          done < <(find cypress/output/screenshots -type f -name '*.png')
+          readarray -t imgs < <(find cypress/output/screenshots -type f -name "*.png")
           echo "${#imgs[@]} screenshots found"
-          cypress_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/output\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
-          echo "Cypress Screenshots:"
-          for i in "${!imgs[@]}"; do  
-            mv "${imgs[$i]}" "${cypress_imgs[$i]}"; 
-            echo "${imgs[$i]}  >>>   ${cypress_imgs[$i]}"; 
+          
+          readarray -t axe_imgs < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
+          echo "${#axe_imgs[@]} axe screenshots found"
+
+          screenshots=()
+          rename_count=1
+
+          for i in "${!imgs[@]}"; do
+            is_duplicate_candidate=$(echo "${imgs[$i]}" | grep -c '(failed)' || true)
+            
+            if [[ $is_duplicate_candidate -gt 0 ]]; then
+              duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
+              if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
+                echo "[img ${i}] skipping duplicate: ${imgs[$i]}";
+                continue
+              fi
+            fi
+
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
+            echo "[img ${i}] renaming file: ${imgs[$i]}  >>>  $new_name"; 
+            mv "${imgs[$i]}" "$new_name"; 
+            screenshots+=("$new_name")
+            ((rename_count++))
           done
-          echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
+
+          echo "saving screenshots: ${screenshots[@]}"; 
+          echo "screenshots=${screenshots[@]}" >> $GITHUB_OUTPUT
 
       - name: Upload screenshots to image host
         id: upload-screenshots
         if: failure()
         run: |
-          cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
+          screenshots=("${{ steps.list.outputs.screenshots }}")
           imgkit_responses=()
-          for img in ${cypress_imgs[@]}; do
+          for img in ${screenshots[@]}; do
             echo "Uploading $img"
             response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
               -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
@@ -81,20 +99,23 @@ jobs:
             const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
-            if (imgkitResponses.length === 0) {
-              return;
+            let imgLinks = [];
+
+            if (imgkitResponses && imgkitResponses.length > 0) {
+              imgkitResponses.forEach(response => {
+                if(!response) return;
+                const { name, url } = JSON.parse(response);
+                imgLinks.push(`![${name}](${url})`);
+              });
             }
 
-            const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
-              const { name, url } = JSON.parse(response);
-              return `![${name}](${url})`;
-            }).join('\n')}`;
+            if (imgLinks.length > 0) {
+              const body = `## Cypress failures\n\n${imgLinks.join('\n')}`;
 
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
-            
-     
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
