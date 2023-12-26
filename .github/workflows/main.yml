@@ -66,11 +66,14 @@ jobs:
             if [[ $is_duplicate_candidate -gt 0 ]]; then
                 test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
                 echo "debug test_name: $test_name";
-                if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
-                    is_duplicate="True"
-                    echo "removing duplicate: ${imgs[$i]}";
-                    rm "${imgs[$i]}"
-                fi
+                for axe_img in "${axe_imgs[@]}"; do
+                  echo "debug axe_img: $axe_img";
+                  if [[ "$axe_img" == "$test_name" ]]; then
+                      is_duplicate="True"
+                      echo "removing duplicate: ${imgs[$i]}";
+                      rm "${imgs[$i]}"
+                  fi
+                done
             fi
             
             if [[ $is_duplicate == "False" ]]; then
