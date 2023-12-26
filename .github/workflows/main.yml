@@ -40,8 +40,9 @@ jobs:
           build: yarn build:skip
           start: yarn start
           browser: chrome
-      
+
       - name: Find and rename cypress fail screenshots
+        shell: bash
         id: list
         if: failure()
         run: |
