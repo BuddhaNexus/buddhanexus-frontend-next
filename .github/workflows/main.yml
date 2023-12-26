@@ -74,7 +74,9 @@ jobs:
                 mv "${imgs[$i]}" "./$new_name"; 
                 echo "adding $new_name to cypress_imgs"; 
                 cypress_imgs+=("$new_name")
+                echo "debug: ${cypress_imgs[@]}"; 
                 ((rename_count++))
+                echo "debug: $rename_count";
             fi
           done
           echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
