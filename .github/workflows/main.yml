@@ -50,9 +50,8 @@ jobs:
           done < <(find cypress/output/screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
 
-          while IFS= read -r line; do
-            axe_imgs+=("$line")
-          done < <(find . -type f -name "*.png" | grep -P '.*(?<!failed\)).png$')
+          readarray -t axe_imgs < <(find cypress/output/screenshots -type f -name "*.png" | grep -P '.*(?<!failed\)).png$')
+          echo "${#axe_imgs[@]} axe screenshots found"
 
           cypress_imgs=()
           rename_count=1
