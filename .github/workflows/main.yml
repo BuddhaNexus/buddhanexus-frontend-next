@@ -45,15 +45,36 @@ jobs:
         id: list
         if: failure()
         run: |
+          readarray -t highlighted < <(find . -type f -name "*.png" | grep -P '.*(?<!failed\)).png$')
+          
           while IFS= read -r line; do
             imgs+=("$line")
           done < <(find cypress/output/screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
-          cypress_imgs=($(for i in "${!imgs[@]}"; do echo "$(echo ${imgs[$i]} | sed "s/\/.*.png/\/output\/screenshots\/run${{ github.run_id }}-screenshot${i+1}.png/")"; done))
-          echo "Cypress Screenshots:"
-          for i in "${!imgs[@]}"; do  
-            mv "${imgs[$i]}" "${cypress_imgs[$i]}"; 
-            echo "${imgs[$i]}  >>>   ${cypress_imgs[$i]}"; 
+
+          cypress_imgs=()
+          rename_count=1
+          
+          for i in "${!imgs[@]}"; do
+            is_duplicate="False"
+            is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
+
+            if [[ $is_duplicate_candidate -gt 0 ]]; then
+                test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
+                if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
+                    is_duplicate="True"
+                    echo "removing duplicate: ${imgs[$i]}";
+                    rm "${imgs[$i]}"
+                fi
+            fi
+            
+            if [[ $is_duplicate == "False" ]]; then
+                new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot$rename_count.png"
+                echo "renaming file: ${imgs[$i]}  >>>  $new_name"; 
+                mv "${imgs[$i]}" "$new_name"; 
+                cypress_imgs+=("$new_name")
+                ((rename_count++))
+            fi
           done
           echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
 
