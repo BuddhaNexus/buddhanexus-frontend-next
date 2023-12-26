@@ -42,7 +42,6 @@ jobs:
           browser: chrome
 
       - name: Find and rename cypress fail screenshots
-        shell: bash
         id: list
         if: failure()
         run: |       
@@ -52,7 +51,7 @@ jobs:
           echo "${#imgs[@]} screenshots found"
 
           while IFS= read -r line; do
-            highlighted+=("$line")
+            axe_imgs+=("$line")
           done < <(find . -type f -name "*.png" | grep -P '.*(?<!failed\)).png$')
 
           cypress_imgs=()
@@ -61,12 +60,13 @@ jobs:
           for i in "${!imgs[@]}"; do
             is_duplicate="False"
             is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
+            echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
 
             if [[ $is_duplicate_candidate -gt 0 ]]; then
                 test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
                 echo "debug test_name: $test_name";
-                if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
+                if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
                     is_duplicate="True"
                     echo "removing duplicate: ${imgs[$i]}";
                     rm "${imgs[$i]}"
