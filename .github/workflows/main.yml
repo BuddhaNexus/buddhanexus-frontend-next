@@ -70,8 +70,9 @@ jobs:
             
             if [[ $is_duplicate == "False" ]]; then
                 new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot$rename_count.png"
-                echo "renaming file: ${imgs[$i]}  >>>  $new_name"; 
-                mv "${imgs[$i]}" "$new_name"; 
+                echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
+                mv "${imgs[$i]}" "./$new_name"; 
+                echo "adding $new_name to cypress_imgs"; 
                 cypress_imgs+=("$new_name")
                 ((rename_count++))
             fi
