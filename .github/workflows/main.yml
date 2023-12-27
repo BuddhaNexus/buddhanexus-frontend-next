@@ -47,7 +47,7 @@ jobs:
         run: |
           while IFS= read -r line; do
               imgs+=("$line")
-          done < <(find ./screenshots -type f -name '*.png')
+          done < <(find cypress/output/screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
 
           axe_imgs=("${imgs[@]// \(failed\).png}")
