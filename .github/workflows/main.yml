@@ -55,7 +55,6 @@ jobs:
           rename_count=1
 
           for i in "${!imgs[@]}"; do
-            is_duplicate="False"
             is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
             echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
@@ -64,19 +63,17 @@ jobs:
                 test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
                 echo "debug test_name: $test_name";
                 if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
-                      is_duplicate="True"
                       echo "removing duplicate: ${imgs[$i]}";
                       rm "${imgs[$i]}"
+                      continue
                 fi
             fi
             
-            if [[ $is_duplicate == "False" ]]; then
-                new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot$rename_count.png"
-                echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
-                mv "${imgs[$i]}" "./$new_name"; 
-                cypress_imgs+=("$new_name")
-                ((rename_count++))
-            fi
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot$rename_count.png"
+            echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
+            mv "${imgs[$i]}" "./$new_name"; 
+            cypress_imgs+=("$new_name")
+            ((rename_count++))
           done
 
           echo "debug. loop finished, cypress_imgs: ${cypress_imgs[@]}"; 
