@@ -73,7 +73,8 @@ jobs:
                 fi
             fi
             
-            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot$rename_count.png"
+            echo "debug: item passed both tests";
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
             echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
             mv "${imgs[$i]}" "./$new_name"; 
             cypress_imgs+=("$new_name")
@@ -108,7 +109,7 @@ jobs:
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
             console.log(`imgkitResponses: ${imgkitResponses}`);
-            if (imgkitResponses.length === 0) {
+            if (!imgkitResponses || imgkitResponses.length === 0) {
               return;
             }
 
