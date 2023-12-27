@@ -37,3 +37,4 @@ yarn-error.log*
 
 .eslintcache
 
+cypress/e2e/routes/working.cy.ts

@@ -78,10 +78,7 @@ export default function TablePage() {
 }
 
 export const getStaticProps: GetStaticProps = async ({ locale, params }) => {
-  const i18nProps = await getI18NextStaticProps({ locale }, [
-    "common",
-    "settings",
-  ]);
+  const i18nProps = await getI18NextStaticProps({ locale }, ["settings"]);
 
   const queryClient = await prefetchDbResultsPageData(
     params?.language as SourceLanguage,
