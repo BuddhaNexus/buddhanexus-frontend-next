@@ -49,19 +49,17 @@ jobs:
               imgs+=("$line")
           done < <(find cypress/output/screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
-          echo "${imgs[@]}"
 
           while IFS= read -r line; do
             axe_imgs+=("$line")
           done < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
           echo "${#axe_imgs[@]} axe screenshots found"
-          echo "${axe_imgs[@]}"
 
           cypress_imgs=()
           rename_count=1
 
           for i in "${!imgs[@]}"; do
-            is_duplicate="False"
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
             is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
             echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
@@ -70,14 +68,13 @@ jobs:
                 test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
                 echo "debug test_name: $test_name";
                 if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
-                      echo "duplicate found: ${imgs[$i]}";
-                      is_duplicate="True"
+                    echo "duplicate found: ${imgs[$i]}";
+                    new_name+="-duplicate"
                 fi
             fi
 
-            if [[ $is_duplicate == "False" ]]; then
-              echo "debug: defining new_name for ${imgs[$i]}";
-              new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
+            echo "debug: renaming ${imgs[$i]}";
+            if [[ ! $new_name == *"duplicate"* ]]; then
               echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
               mv "${imgs[$i]}" "./$new_name"; 
               cypress_imgs+=("$new_name")
