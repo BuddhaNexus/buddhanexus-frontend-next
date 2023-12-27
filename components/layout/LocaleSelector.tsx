@@ -43,6 +43,7 @@ export default function LocaleSelector() {
       </Button>
       <Menu
         id="language-menu"
+        role="navigation"
         anchorEl={anchorEl}
         open={isOpen}
         variant="menu"
