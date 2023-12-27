@@ -50,7 +50,9 @@ jobs:
           done < <(find cypress/output/screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
 
-          axe_imgs=("${imgs[@]// \(failed\).png}")
+          while IFS= read -r line; do
+            axe_imgs+=("$line")
+          done < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
           echo "${#axe_imgs[@]} axe screenshots found"
 
           cypress_imgs=()
@@ -105,6 +107,7 @@ jobs:
             const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
+            console.log(`imgkitResponses: ${imgkitResponses}`);
             if (imgkitResponses.length === 0) {
               return;
             }
