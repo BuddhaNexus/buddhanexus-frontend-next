@@ -55,71 +55,74 @@ jobs:
           done < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
           echo "${#axe_imgs[@]} axe screenshots found"
 
-          rename_imgs=()
-          cypress_imgs=()
+          screenshots=()
           rename_count=1
 
           for i in "${!imgs[@]}"; do
-            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
             is_duplicate_candidate=$(echo "${imgs[$i]}" | grep -c '(failed)' || true)
-            duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
+            
             echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
 
-            echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
-            
+            if [[ $is_duplicate_candidate -gt 0 ]]; then
+              duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
+              if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
+                echo "skipping duplicate: ${imgs[$i]}";
+                continue
+              fi
+            fi
+
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
+            echo "renaming file: ${imgs[$i]}  >>>  $new_name"; 
+            mv "${imgs[$i]}" "$new_name"; 
+            screenshots+=("$new_name")
+            ((rename_count++))
           done
 
-          echo "debug. loop finished 1, cypress_imgs: ${cypress_imgs[@]}"; 
+          echo "saving screenshots: ${screenshots[@]}"; 
+          echo "screenshots=${screenshots[@]}" >> $GITHUB_OUTPUT
 
-          # for i in "${!rename_imgs[@]}"; do
-          #   echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
-          #   mv "${rename_imgs[$i]}" "${cypress_imgs[$i]}"
-          # done
+      - name: Upload screenshots to image host
+        id: upload-screenshots
+        if: failure()
+        run: |
+          screenshots=("${{ steps.list.outputs.screenshots }}")
+          imgkit_responses=()
+          for img in ${screenshots[@]}; do
+            echo "Uploading $img"
+            response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
+              -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
+              -F "file=@$img;type=image/png" \
+              -F "fileName=$(basename $img)")
+            imgkit_responses+=("$response")
+          done
+          echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
 
-          # echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
+      - name: Extract image data and create comment
+        if: failure()
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
+            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
-      # - name: Upload screenshots to image host
-      #   id: upload-screenshots
-      #   if: failure()
-      #   run: |
-      #     cypress_imgs=("${{ steps.list.outputs.cypress_imgs }}")
-      #     imgkit_responses=()
-      #     for img in ${cypress_imgs[@]}; do
-      #       echo "Uploading $img"
-      #       response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
-      #         -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
-      #         -F "file=@$img;type=image/png" \
-      #         -F "fileName=$(basename $img)")
-      #       imgkit_responses+=("$response")
-      #     done
-      #     echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
+            let imgLinks;
 
-      # - name: Extract image data and create comment
-      #   if: failure()
-      #   uses: actions/github-script@v5
-      #   with:
-      #     script: |
-      #       const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
-      #       const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
+            if (imgkitResponses && imgkitResponses.length > 0) {
+              const imgLinks = imgkitResponses.map(response => {
+                if(!response) return;
+                const { name, url } = JSON.parse(response);
+                return `![${name}](${url})`;
+              }).join('\n');
+            }
 
-      #       let imgLinks;
+            if (imgLinks) {
+              const body = `## Cypress failures\n\n${imgLinks}`;
 
-      #       if (imgkitResponses && imgkitResponses.length > 0) {
-      #         const imgLinks = imgkitResponses.map(response => {
-      #           if(!response) return;
-      #           const { name, url } = JSON.parse(response);
-      #           return `![${name}](${url})`;
-      #         }).join('\n');
-      #       }
-
-      #       if (imgLinks) {
-      #         const body = `## Cypress failures\n\n${imgLinks}`;
-
-      #         github.rest.issues.createComment({
-      #           issue_number: context.issue.number,
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           body: body
-      #         });
-      #       }
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
