@@ -59,6 +59,7 @@ jobs:
           rename_count=1
 
           for i in "${!imgs[@]}"; do
+            is_duplicate="False"
             is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
             echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
@@ -69,8 +70,13 @@ jobs:
                 if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
                       rm "${imgs[$i]}"
                       echo "removed duplicate: ${imgs[$i]}";
-                      continue
+                      is_duplicate="True"
                 fi
+            fi
+
+            if [[ $is_duplicate == "True" ]]; then
+                echo "debug: continuing loop";
+                continue
             fi
             
             echo "debug: item passed both tests";
@@ -109,18 +115,16 @@ jobs:
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
             console.log(`imgkitResponses: ${imgkitResponses}`);
-            if (!imgkitResponses || imgkitResponses.length === 0) {
-              return;
+            if (imgkitResponses && imgkitResponses.length > 0) {
+              const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
+                const { name, url } = JSON.parse(response);
+                return `![${name}](${url})`;
+              }).join('\n')}`;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
             }
-
-            const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
-              const { name, url } = JSON.parse(response);
-              return `![${name}](${url})`;
-            }).join('\n')}`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
