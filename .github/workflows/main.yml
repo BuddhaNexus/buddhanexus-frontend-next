@@ -45,10 +45,12 @@ jobs:
         id: list
         if: failure()
         run: |
-          readarray -t imgs < <(find cypress/output/screenshots -type f -name "*.png")
+          while IFS= read -r line; do
+              imgs+=("$line")
+          done < <(find ./screenshots -type f -name '*.png')
           echo "${#imgs[@]} screenshots found"
 
-          readarray -t axe_imgs < <(find cypress/output/screenshots -type f -name "*.png" | grep -P '.*(?<!failed\)).png$')
+          axe_imgs=("${imgs[@]// \(failed\).png}")
           echo "${#axe_imgs[@]} axe screenshots found"
 
           cypress_imgs=()
@@ -63,8 +65,8 @@ jobs:
                 test_name=$(echo ${imgs[$i]} | sed "s/\s(failed)//")
                 echo "debug test_name: $test_name";
                 if [[ " ${axe_imgs[@]} " =~ " ${test_name} " ]]; then
-                      echo "removing duplicate: ${imgs[$i]}";
                       rm "${imgs[$i]}"
+                      echo "removed duplicate: ${imgs[$i]}";
                       continue
                 fi
             fi
