@@ -66,15 +66,14 @@ jobs:
             echo "debug loop item: $i";
             echo "debug img: ${imgs[$i]}";
 
-            if [[ $is_duplicate_candidate -gt 0 && " ${axe_imgs[@]} " =~ " ${duplicate_test_name} " ]]; then
-               echo "debug: continuing";
-               continue
+            if [[ ! $is_duplicate_candidate -gt 0 || $is_duplicate_candidate -gt 0 && ! " ${axe_imgs[@]} " =~ " ${duplicate_test_name} " ]]; then
+              echo "debug: adding to rename_imgs";
+              rename_imgs+=("${imgs[$i]}");
+              cypress_imgs+=("$new_name");
+              ((rename_count++))
             fi
 
-            echo "debug: adding to rename_imgs";
-            rename_imgs+=("${imgs[$i]}");
-            cypress_imgs+=("$new_name");
-            ((rename_count++))
+            
           done
 
           echo "debug. loop finished 1, cypress_imgs: ${cypress_imgs[@]}"; 
