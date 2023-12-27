@@ -45,14 +45,10 @@ jobs:
         id: list
         if: failure()
         run: |
-          while IFS= read -r line; do
-              imgs+=("$line")
-          done < <(find cypress/output/screenshots -type f -name '*.png')
+          readarray -t imgs < <(find cypress/output/screenshots -type f -name "*.png")
           echo "${#imgs[@]} screenshots found"
-
-          while IFS= read -r line; do
-            axe_imgs+=("$line")
-          done < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
+          
+          readarray -t axe_imgs < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
           echo "${#axe_imgs[@]} axe screenshots found"
 
           screenshots=()
@@ -61,19 +57,16 @@ jobs:
           for i in "${!imgs[@]}"; do
             is_duplicate_candidate=$(echo "${imgs[$i]}" | grep -c '(failed)' || true)
             
-            echo "debug loop item: $i";
-            echo "debug img: ${imgs[$i]}";
-
             if [[ $is_duplicate_candidate -gt 0 ]]; then
               duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
               if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
-                echo "skipping duplicate: ${imgs[$i]}";
+                echo "[img ${i}] skipping duplicate: ${imgs[$i]}";
                 continue
               fi
             fi
 
             new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
-            echo "renaming file: ${imgs[$i]}  >>>  $new_name"; 
+            echo "[img ${i}] renaming file: ${imgs[$i]}  >>>  $new_name"; 
             mv "${imgs[$i]}" "$new_name"; 
             screenshots+=("$new_name")
             ((rename_count++))
@@ -106,18 +99,18 @@ jobs:
             const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
             const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
 
-            let imgLinks;
+            let imgLinks = [];
 
             if (imgkitResponses && imgkitResponses.length > 0) {
-              const imgLinks = imgkitResponses.map(response => {
+              imgkitResponses.forEach(response => {
                 if(!response) return;
                 const { name, url } = JSON.parse(response);
-                return `![${name}](${url})`;
-              }).join('\n');
+                imgLinks.push(`![${name}](${url})`);
+              });
             }
 
-            if (imgLinks) {
-              const body = `## Cypress failures\n\n${imgLinks}`;
+            if (imgLinks.length > 0) {
+              const body = `## Cypress failures\n\n${imgLinks.join('\n')}`;
 
               github.rest.issues.createComment({
                 issue_number: context.issue.number,
