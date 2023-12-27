@@ -55,10 +55,11 @@ jobs:
           done < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
           echo "${#axe_imgs[@]} axe screenshots found"
 
+          rename_imgs=()
           cypress_imgs=()
           rename_count=1
 
-          for i in "${!imgs[@]}"; do
+          for ((i=0;i<${#imgs[@]};i++)); do
             new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
             is_duplicate_candidate=$(echo ${imgs[$i]} | grep -c '(failed)')
             echo "debug loop item: $i";
