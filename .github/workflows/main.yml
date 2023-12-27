@@ -74,17 +74,14 @@ jobs:
                 fi
             fi
 
-            if [[ $is_duplicate == "True" ]]; then
-                echo "debug: continuing loop";
-                continue
+            if [[ $is_duplicate == "False" ]]; then
+              echo "debug: item passed both tests";
+              new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
+              echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
+              mv "${imgs[$i]}" "./$new_name"; 
+              cypress_imgs+=("$new_name")
+              ((rename_count++))
             fi
-            
-            echo "debug: item passed both tests";
-            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
-            echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
-            mv "${imgs[$i]}" "./$new_name"; 
-            cypress_imgs+=("$new_name")
-            ((rename_count++))
           done
 
           echo "debug. loop finished, cypress_imgs: ${cypress_imgs[@]}"; 
@@ -117,6 +114,7 @@ jobs:
             console.log(`imgkitResponses: ${imgkitResponses}`);
             if (imgkitResponses && imgkitResponses.length > 0) {
               const body = `## Cypress failures\n\n${imgkitResponses.map(response => {
+                console.log(`response: ${response}`);
                 const { name, url } = JSON.parse(response);
                 return `![${name}](${url})`;
               }).join('\n')}`;
