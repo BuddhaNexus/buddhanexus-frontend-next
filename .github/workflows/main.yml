@@ -60,11 +60,24 @@ jobs:
           rename_count=1
 
           for i in "${!imgs[@]}"; do
-            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"      
+            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
+            is_duplicate_candidate=$(echo "${imgs[$i]}" | grep -c '(failed)' || true)
+            duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
+            echo "debug loop item: $i";
+            echo "debug img: ${imgs[$i]}";
+
             echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
+            
           done
 
           echo "debug. loop finished 1, cypress_imgs: ${cypress_imgs[@]}"; 
+
+          # for i in "${!rename_imgs[@]}"; do
+          #   echo "renaming file: ${imgs[$i]}  >>>  ./$new_name"; 
+          #   mv "${rename_imgs[$i]}" "${cypress_imgs[$i]}"
+          # done
+
+          # echo "cypress_imgs=${cypress_imgs[@]}" >> $GITHUB_OUTPUT
 
       # - name: Upload screenshots to image host
       #   id: upload-screenshots
