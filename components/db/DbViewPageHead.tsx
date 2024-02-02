@@ -6,14 +6,14 @@ import { Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { startCase } from "lodash";
-import { OldDbApi } from "utils/api/dbApi";
+import { DbApi } from "utils/api/dbApi";
 
 export const DbViewPageHead = () => {
   const { fileName } = useDbQueryParams();
 
-  const { data: displayName } = useQuery({
-    queryKey: OldDbApi.TextDisplayName.makeQueryKey(fileName),
-    queryFn: () => OldDbApi.TextDisplayName.call(fileName),
+  const { data: displayName, isLoading } = useQuery({
+    queryKey: DbApi.TextDisplayName.makeQueryKey(fileName),
+    queryFn: () => DbApi.TextDisplayName.call(fileName),
   });
 
   const dbView = useAtomValue(currentViewAtom);
@@ -26,10 +26,15 @@ export const DbViewPageHead = () => {
         )} View`}
       />
       <QueryPageTopStack />
-
-      <Typography variant="h2" component="h1" mb={1}>
-        {fileName?.toUpperCase()}
-      </Typography>
+      {isLoading ? (
+        <Typography variant="h2" component="h1" mb={1}>
+          {fileName?.toUpperCase()}
+        </Typography>
+      ) : (
+        <Typography variant="h2" component="h1" mb={1}>
+          {fileName?.toUpperCase()}: {displayName}
+        </Typography>
+      )}
     </>
   );
 };
