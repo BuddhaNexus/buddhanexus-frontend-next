@@ -11,8 +11,7 @@ import { OldDbApi } from "utils/api/dbApi";
 export const DbViewPageHead = () => {
   const { fileName } = useDbQueryParams();
 
-  // TODO: the current implementation uses an endpoint from the old API, we should switch to the new one when available
-  const { data: displayName, isLoading } = useQuery({
+  const { data: displayName } = useQuery({
     queryKey: OldDbApi.TextDisplayName.makeQueryKey(fileName),
     queryFn: () => OldDbApi.TextDisplayName.call(fileName),
   });
@@ -27,15 +26,10 @@ export const DbViewPageHead = () => {
         )} View`}
       />
       <QueryPageTopStack />
-      {isLoading ? (
-        <Typography variant="h2" component="h1" mb={1}>
-          {fileName.toUpperCase()}
-        </Typography>
-      ) : (
-        <Typography variant="h2" component="h1" mb={1}>
-          {fileName.toUpperCase()}: {displayName}
-        </Typography>
-      )}
+
+      <Typography variant="h2" component="h1" mb={1}>
+        {fileName?.toUpperCase()}
+      </Typography>
     </>
   );
 };
