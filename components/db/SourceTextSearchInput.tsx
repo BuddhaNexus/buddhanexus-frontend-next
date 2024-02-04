@@ -68,12 +68,13 @@ const Row = (props: ListChildComponentProps) => {
     );
   }
 
-  const [dataSetProps, { name, textName }] = dataSet;
+  const [dataSetProps, { name, textName, fileName }] = dataSet;
 
   return (
     <Box
       {...dataSetProps}
       data-testid="db-source-text-input-list-item"
+      data-testdata-file-name={fileName}
       style={inlineStyle}
       sx={{
         display: "flex",

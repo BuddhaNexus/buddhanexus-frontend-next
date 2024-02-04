@@ -19,5 +19,6 @@ export default defineConfig({
     screenshotsFolder: "cypress/output/screenshots",
     videosFolder: "cypress/output/videos",
     viewportWidth: 1280,
+    watchForFileChanges: false,
   },
 });

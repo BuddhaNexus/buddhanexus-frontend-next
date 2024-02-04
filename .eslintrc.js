@@ -190,6 +190,8 @@ const rules = {
   // https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/valid-expect.md — Cypress docs show this is an invalid complaint
   "jest/valid-expect": "off",
   "jest/no-done-callback": "off",
+  "jest/expect-expect": "off",
+  "jest/expect-expect": "off",
 };
 
 module.exports = {
@@ -215,8 +217,9 @@ module.exports = {
         ...rules,
         "no-invalid-this": "off",
         "func-names": "off",
-      } 
-    }
+        "no-unused-expressions": "off",
+      },
+    },
   ],
   extends: ["plugin:@next/next/recommended"],
 };
