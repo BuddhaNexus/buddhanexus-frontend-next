@@ -87,7 +87,7 @@ export default function NumbersPage() {
 
   return (
     <PageContainer
-      maxWidth="xl"
+      maxWidth={false}
       backgroundName={sourceLanguage}
       isQueryResultsPage
     >
