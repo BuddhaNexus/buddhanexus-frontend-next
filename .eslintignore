@@ -1,2 +1,3 @@
 next-env.d.ts
 codegen/**
+features/numbersView/NumbersView.tsx

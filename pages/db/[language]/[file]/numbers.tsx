@@ -12,6 +12,8 @@ import {
   // dehydrate,
   useInfiniteQuery,
 } from "@tanstack/react-query";
+import TBODY_DATA_MODEL from "features/numbersView/dummyDataProtoModelTBody.json";
+import THEAD_DATA_MODEL from "features/numbersView/dummyDataProtoModelTHead.json";
 import NumbersView from "features/numbersView/NumbersView";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
@@ -42,6 +44,35 @@ export default function NumbersPage() {
         lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
     });
 
+  const allData = React.useMemo(
+    () =>
+      TBODY_DATA_MODEL
+        ? TBODY_DATA_MODEL.pages.flatMap((page) => {
+            const pageRows: any = [];
+
+            page.data.forEach((segment) => {
+              const row: any = {};
+              row.segment = {
+                id: segment.segmentnr,
+                text: segment.segment_text,
+              };
+
+              segment.parallels.forEach((parallel) => {
+                const currentCollectionValue = row[parallel.collection] || [];
+                row[parallel.collection] = [
+                  ...currentCollectionValue,
+                  parallel,
+                ];
+              });
+              pageRows.push(row);
+            });
+
+            return pageRows;
+          })
+        : [],
+    [],
+  );
+
   if (isError) {
     return <ErrorPage backgroundName={sourceLanguage} />;
   }
@@ -62,19 +93,16 @@ export default function NumbersPage() {
     >
       <DbViewPageHead />
 
-      {/* Just printing some example data: */}
-      {/* The deta should probably be transformed according to our needs before using it here. */}
-
       {isLoading || !data ? (
         <CenteredProgress />
       ) : (
-        <div style={{ height: "100vh" }}>
-          <NumbersView
-            data={data.pages.flatMap((page) => page.data)}
-            onEndReached={fetchNextPage}
-            onStartReached={fetchPreviousPage}
-          />
-        </div>
+        <NumbersView
+          headers={THEAD_DATA_MODEL.collections}
+          data={allData}
+          language={sourceLanguage}
+          onEndReached={fetchNextPage}
+          onStartReached={fetchPreviousPage}
+        />
       )}
       <SourceTextBrowserDrawer />
     </PageContainer>
