@@ -1,4 +1,11 @@
 import React from "react";
+import { TableComponents, TableVirtuoso } from "react-virtuoso";
+import { Skeleton, TableCell, TableRow } from "@mui/material";
+import {
+  FetchNextPageOptions,
+  InfiniteData,
+  InfiniteQueryObserverResult,
+} from "@tanstack/react-query";
 import {
   ColumnDef,
   flexRender,
@@ -7,62 +14,63 @@ import {
   Row,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  FetchNextPageOptions,
-  InfiniteQueryObserverResult,
-  InfiniteData,
-} from "@tanstack/react-query";
-import { TableComponents, TableVirtuoso } from "react-virtuoso";
-import { TableCell, TableRow, Skeleton } from "@mui/material";
+import type {
+  APINumbersCategoriesData,
+  APINumbersData,
+  NumbersSegment,
+} from "utils/api/numbers";
+import { PagedAPINumbersData } from "utils/api/numbers";
 import { SourceLanguage } from "utils/constants";
+
 import {
-  getVirtuosoTableComponents,
   createTableColumns,
   createTableRows,
+  getVirtuosoTableComponents,
 } from "./numbresViewTableContent";
-import { PagedAPINumbersResponse } from "utils/api/numbers";
-// TODO: typing
-// import type { NumbersPageData } from "utils/api/numbers";
 
-interface Props {
-  collections: any;
-  data: any;
+interface NumbersTableProps {
+  categories: APINumbersCategoriesData;
+  data: APINumbersData;
+  hasNextPage: boolean;
   fetchNextPage: (
-    options?: FetchNextPageOptions | undefined
+    options?: FetchNextPageOptions | undefined,
   ) => Promise<
     InfiniteQueryObserverResult<
-      InfiniteData<PagedAPINumbersResponse, unknown>,
+      InfiniteData<PagedAPINumbersData, unknown>,
       Error
     >
   >;
-  isFetchingNextPage: boolean;
+  isFetching: boolean;
   isLoading: boolean;
-  totalDBRowCount: number;
   language: SourceLanguage;
+  fileName: string;
 }
 
 const stickyStyles = { position: "sticky", left: 0 };
 
 export default function NumbersTable({
-  collections,
+  categories,
   data,
+  hasNextPage,
   fetchNextPage,
-  isFetchingNextPage,
+  isFetching,
   isLoading,
-  totalDBRowCount,
   language,
-}: Props) {
+  fileName,
+}: NumbersTableProps) {
   const loadMoreItems = React.useCallback(async () => {
-    if (!isFetchingNextPage && !isLoading) {
+    if (!isFetching && !isLoading) {
       await fetchNextPage();
     }
-  }, [isFetchingNextPage, fetchNextPage, isLoading]);
+  }, [isFetching, fetchNextPage, isLoading]);
 
   const rowData = React.useMemo(() => createTableRows(data), [data]);
-  const columns = React.useMemo<ColumnDef<any>[]>(
-    () => createTableColumns({ collections, language }),
-    []
+
+  const columns = React.useMemo<ColumnDef<NumbersSegment>[]>(
+    () => createTableColumns({ categories, language, fileName }),
+    [categories, language, fileName],
   );
+
   const table = useReactTable({
     data: rowData,
     columns,
@@ -74,14 +82,14 @@ export default function NumbersTable({
 
   const components = React.useMemo(
     () => getVirtuosoTableComponents() as TableComponents<any>,
-    []
+    [],
   );
 
   const FixedHeaderContent = React.memo(() => {
     return table.getHeaderGroups().map((headerGroup) => (
       <TableRow
-        sx={{ backgroundColor: "background.card", margin: 0 }}
         key={headerGroup.id}
+        sx={{ backgroundColor: "background.card", margin: 0 }}
       >
         {headerGroup.headers.map((header) => {
           const styles = {
@@ -101,10 +109,14 @@ export default function NumbersTable({
       </TableRow>
     ));
   });
+  FixedHeaderContent.displayName = "FixedHeaderContent";
 
   const ItemContent: React.FC<{ index: number }> = React.memo(({ index }) => {
-    if (index >= rows.length && index + 2 < totalDBRowCount) {
-      loadMoreItems();
+    const shouldLoadMore = index >= rows.length - 1 && hasNextPage;
+
+    if (shouldLoadMore && !isFetching) {
+      // eslint-disable-next-line no-void
+      void loadMoreItems();
       return (
         <>
           {columns.map((column) => (
@@ -115,14 +127,15 @@ export default function NumbersTable({
         </>
       );
     }
+    ItemContent.displayName = "ItemContent";
 
     const row = rows[index] as Row<any>;
 
     return (
       <>
-        {row?.getVisibleCells().map((cell) => (
+        {row?.getVisibleCells().map((cell, i) => (
           <TableCell
-            key={cell.id}
+            key={cell.id.concat(i.toString())}
             sx={{
               padding: "6px",
               ...(cell.column.getIsFirstColumn() && {
@@ -143,7 +156,7 @@ export default function NumbersTable({
   return (
     <div style={{ height: "100%" }}>
       <TableVirtuoso
-        totalCount={totalDBRowCount}
+        totalCount={data.length}
         components={components}
         itemContent={(index) => <ItemContent index={index} />}
         overscan={20}

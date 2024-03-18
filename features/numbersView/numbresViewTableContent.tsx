@@ -1,34 +1,51 @@
 import React from "react";
 import { TableComponents } from "react-virtuoso";
 import {
+  Paper,
+  Skeleton,
   Table,
   TableBody,
-  Paper,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  Skeleton,
-  TableContainer,
-  Typography,
   Tooltip,
+  Typography,
 } from "@mui/material";
+import type { CellContext, ColumnDef } from "@tanstack/react-table";
 import { Link } from "components/common/Link";
+import type {
+  APINumbersCategoriesData,
+  APINumbersData,
+  NumbersParallel,
+  NumbersSegment,
+} from "utils/api/numbers";
+import { SourceLanguage } from "utils/constants";
 
-// TODO: typing
+export const createTableRows = (rowData: APINumbersData) =>
+  rowData.map((item) => {
+    const row: any = { segment: item.segmentnr };
 
-export const createTableRows = (rowData: any) =>
-  rowData.map((item: any) => {
-    const row: any = {};
-    row.segment = item.segment;
-
-    item.parallels.forEach((parallel: any) => {
-      const prevCollectionValue = row[parallel.collection] || [];
-      row[parallel.collection] = [...prevCollectionValue, parallel];
+    item.parallels.forEach((parallel) => {
+      const prevCategoryValue = row[parallel.category] || [];
+      Object.assign(row, {
+        [parallel.category]: [...prevCategoryValue, parallel],
+      });
     });
+
     return row;
   });
 
-export const createTableColumns = ({ collections, language }: any) => [
+interface CreateTableColumnProps {
+  categories: APINumbersCategoriesData;
+  language: SourceLanguage;
+  fileName: string;
+}
+export const createTableColumns = ({
+  categories,
+  language,
+  fileName,
+}: CreateTableColumnProps): ColumnDef<NumbersSegment>[] => [
   {
     accessorKey: "segment",
     header: () => (
@@ -37,16 +54,16 @@ export const createTableColumns = ({ collections, language }: any) => [
           width: "150px",
         }}
       >
-        <Typography>{"segment".toUpperCase()}</Typography>
+        <Typography textTransform="uppercase">segment</Typography>
       </div>
     ),
-    cell: (info: any) => {
-      const { filename, segmentnr } = info.getValue();
+    cell: (info) => {
+      const segmentnr = info.getValue<string>();
       return (
         <Typography sx={{ fontWeight: 500 }}>
           <Link
             // TODO: make sure this links to the correct segment
-            href={`/db/${language}/${filename}/text?selectedSegment=${segmentnr}`}
+            href={`/db/${language}/${fileName}/text?selectedSegment=${segmentnr}`}
             target="_blank"
             rel="noreferrer noopenner"
           >
@@ -56,7 +73,7 @@ export const createTableColumns = ({ collections, language }: any) => [
       );
     },
   },
-  ...collections.map((header: any) => ({
+  ...categories.map((header) => ({
     accessorKey: header.id,
     header: () => (
       <div
@@ -65,11 +82,11 @@ export const createTableColumns = ({ collections, language }: any) => [
           paddingLeft: "6px",
         }}
       >
-        <Typography>{header.id.toUpperCase()}</Typography>
+        <Typography textTransform="uppercase">{header.id}</Typography>
       </div>
     ),
-    cell: (info: any) => {
-      const parallels = info?.getValue() || [];
+    cell: (info: CellContext<NumbersSegment, unknown>) => {
+      const parallels = info?.getValue<NumbersParallel[]>() || [];
       return (
         <div
           style={{
@@ -77,12 +94,17 @@ export const createTableColumns = ({ collections, language }: any) => [
             paddingLeft: "1rem",
           }}
         >
-          {parallels.map((parallel: any) => {
-            const { displayname, filename, segmentnr } = parallel || {};
+          {parallels.map((parallel, i) => {
+            const {
+              displayName,
+              fileName: parallelFileName,
+              segmentnr,
+            } = parallel || {};
+
             return (
               <Tooltip
-                key={[info.cell.id, segmentnr].join("-")}
-                title={displayname}
+                key={[info.cell.id, segmentnr, i].join("-")}
+                title={displayName}
                 PopperProps={{
                   disablePortal: true,
                 }}
@@ -92,7 +114,7 @@ export const createTableColumns = ({ collections, language }: any) => [
                 <Typography>
                   <Link
                     // TODO: make sure this links to the correct segment
-                    href={`/db/${language}/${filename}/text?selectedSegment=${segmentnr}`}
+                    href={`/db/${language}/${parallelFileName}/text?selectedSegment=${segmentnr}`}
                     color="text.primary"
                     target="_blank"
                     rel="noreferrer noopenner"
@@ -109,10 +131,25 @@ export const createTableColumns = ({ collections, language }: any) => [
   })),
 ];
 
+const ScrollerRef = React.forwardRef<HTMLDivElement>(
+  function ScrollerRef(props, ref) {
+    return <TableContainer component={Paper} {...props} ref={ref} />;
+  },
+);
+const TableHeadRef = React.forwardRef<HTMLTableSectionElement>(
+  function TableHeadRef(props, ref) {
+    return <TableHead {...props} ref={ref} sx={{ zIndex: "2 !important" }} />;
+  },
+);
+
+const TableBodyRef = React.forwardRef<HTMLTableSectionElement>(
+  function TableBodyRef(props, ref) {
+    return <TableBody {...props} ref={ref} />;
+  },
+);
+
 export const getVirtuosoTableComponents = (): TableComponents => ({
-  Scroller: React.forwardRef((props, ref) => (
-    <TableContainer component={Paper} {...props} ref={ref} />
-  )),
+  Scroller: ScrollerRef,
   Table: (props) => (
     <Table
       {...props}
@@ -125,17 +162,9 @@ export const getVirtuosoTableComponents = (): TableComponents => ({
       }}
     />
   ),
-  TableHead: React.forwardRef<HTMLTableSectionElement>(
-    function TableHeadRef(props, ref) {
-      return <TableHead {...props} ref={ref} sx={{ zIndex: "2 !important" }} />;
-    }
-  ),
-  TableRow: TableRow,
-  TableBody: React.forwardRef<HTMLTableSectionElement>(
-    function TableBodyRef(props, ref) {
-      return <TableBody {...props} ref={ref} />;
-    }
-  ),
+  TableHead: TableHeadRef,
+  TableRow,
+  TableBody: TableBodyRef,
   ScrollSeekPlaceholder: ({ height }) => (
     <TableRow
       sx={{

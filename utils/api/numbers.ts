@@ -1,148 +1,68 @@
 import apiClient from "@api";
 import type {
-  ApiNumbersPageData,
   FilePropApiQuery,
   InfiniteFilePropApiQuery,
   PagedResponse,
 } from "types/api/common";
 
-interface Segment {
-  segmentnr: string;
-  parallels: string[][];
-}
-
-export interface ApiSegmentsData {
-  collections: Record<string, string>[][];
-  segments: Segment[];
-}
-
-type TableData = Record<string, string[] | string>;
-
-export type NumbersPageData = TableData[];
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-function parseApiSegmentsData(apiData: ApiSegmentsData): NumbersPageData {
-  const numbersData = [];
-
-  const headerRow: TableData[] = [{ segmentnr: "i18nKey" }];
-
-  for (const [i, segment] of apiData.segments.entries()) {
-    const row: TableData = { segmentnr: segment.segmentnr };
-
-    for (const collection of apiData.collections.flat()) {
-      if (i === 0) {
-        headerRow.push(collection);
-      }
-
-      const [column] = Object.keys(collection);
-
-      const isChn = /^[A-Z]/.exec(column!);
-      const idSeparator = isChn ? "n" : new RegExp(/\d/);
-
-      const parallels = segment.parallels.flat();
-      row[column!] = parallels.filter((p) => {
-        return p.split(idSeparator)[0] === column;
-      });
-    }
-
-    if (i === 0) {
-      numbersData.push(headerRow);
-    }
-
-    numbersData.push(row);
-  }
-
-  return numbersData as NumbersPageData;
-}
-
 import { parseDbPageQueryParams } from "./utils";
 
-interface NumbersParallel {
-  filename: string;
+export interface NumbersParallel {
+  displayName: string;
+  fileName: string;
+  category: string;
   segmentnr: string;
-  displayname: string;
-  collection: string;
 }
-interface APINumberSegmentData {
-  segment: {
-    segmentnr: string;
-    filename: string;
-  };
+export interface NumbersSegment {
+  segmentnr: string;
   parallels: NumbersParallel[];
 }
 
+export type APINumbersData = NumbersSegment[];
+
 type ExtendedPagedResponse<T> = PagedResponse<T> & {
-  totalRowCount: number;
+  hasNextPage: boolean;
 };
 
-export type PagedAPINumbersResponse = ExtendedPagedResponse<
-  APINumberSegmentData[]
->;
+export type PagedAPINumbersData = ExtendedPagedResponse<APINumbersData>;
 
 export async function getNumbersData({
   fileName,
   queryParams,
   pageNumber,
-}: InfiniteFilePropApiQuery): Promise<PagedAPINumbersResponse> {
+}: InfiniteFilePropApiQuery): Promise<PagedAPINumbersData> {
   // TODO:
-  //    - reconnect to api after endpoint update and remove mockoon fetch
-  //        - TODO: https://uriyyo-fastapi-pagination.netlify.app/tutorials/page-number-pagination/
   //    - remove type casting once response model is added to api
-  // const { data } = await apiClient.POST("/numbers-view/numbers", {
-  //   body: {
-  //     file_name: fileName,
-  //     score: 30,
-  //     par_length: 30,
-  //     sort_method: "position",
-  //     ...parseDbPageQueryParams(queryParams),
-  //     page: pageNumber,
-  //   },
-  // });
+  const { data: res } = await apiClient.POST("/numbers-view/numbers", {
+    body: {
+      file_name: fileName,
+      score: 30,
+      par_length: 30,
+      sort_method: "position",
+      ...parseDbPageQueryParams(queryParams),
+      page: pageNumber,
+    },
+  });
 
-  // if (!pageNumber) {
-  //   return undefined;
-  // }
+  const data = res as APINumbersData;
 
-  const res = await fetch(
-    `http://localhost:9001/numbers-view/numbers?page=${pageNumber + 1}&limit=25`
-  );
-
-  const data = await res.json();
-
-  const mockData = { items: data, total: 82 };
-
-  // TODO: mock data simulating FastAPI pagination return (see above link) with Mockoon; update when endpoint is available
-  return { data: mockData.items, pageNumber, totalRowCount: mockData.total };
+  const hasNextPage = !(Object.keys(data).length < 100);
+  return { data, pageNumber, hasNextPage };
 }
-export async function getNumbersViewCollections({
+
+export type APINumbersCategoriesData = {
+  id: string;
+  displayName: string;
+}[];
+
+export async function getNumbersViewCategories({
   fileName,
-  queryParams,
-}: FilePropApiQuery): Promise<
-  {
-    id: string;
-    displayname: string;
-  }[]
-> {
+}: FilePropApiQuery): Promise<APINumbersCategoriesData> {
   // TODO:
-  //    - reconnect to api after endpoint update and remove mockoon fetch
-  //        - TODO: https://uriyyo-fastapi-pagination.netlify.app/tutorials/page-number-pagination/
   //    - remove type casting once response model is added to api
-  // const { data } = await apiClient.POST("/numbers-view/numbers", {
-  //   body: {
-  //     file_name: fileName,
-  //     score: 30,
-  //     par_length: 30,
-  //     sort_method: "position",
-  //     ...parseDbPageQueryParams(queryParams),
-  //     page: pageNumber,
-  //   },
-  // });
+  const { data } = await apiClient.GET("/numbers-view/categories/", {
+    params: { query: { file_name: fileName } },
+  });
 
-  // if (!pageNumber) {
-  //   return undefined;
-  // }
-
-  const res = await fetch(`http://localhost:9001/numbers-view/collections`);
-
-  return await res.json();
+  return data as APINumbersCategoriesData;
 }

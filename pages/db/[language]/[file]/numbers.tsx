@@ -7,7 +7,6 @@ import { useDbView } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
-// import type { NumbersPageData } from "utils/api/numbers";
 import {
   // dehydrate,
   keepPreviousData,
@@ -17,9 +16,8 @@ import {
 import NumbersTable from "features/numbersView/NumbersTable";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
-import type { ApiNumbersPageData, PagedResponse } from "types/api/common";
 import { DbApi } from "utils/api/dbApi";
-import { PagedAPINumbersResponse } from "utils/api/numbers";
+import { PagedAPINumbersData } from "utils/api/numbers";
 // import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
@@ -38,8 +36,8 @@ export default function NumbersPage() {
     queryFn: () => DbApi.NumbersViewCollections.call({ fileName, queryParams }),
   });
 
-  const { data, fetchNextPage, isFetchingNextPage, isLoading, isError } =
-    useInfiniteQuery<PagedAPINumbersResponse>({
+  const { data, fetchNextPage, isLoading, isFetching, isError } =
+    useInfiniteQuery<PagedAPINumbersData>({
       initialPageParam: 0,
       queryKey: DbApi.NumbersView.makeQueryKey({ fileName, queryParams }),
       queryFn: ({ pageParam = 0 }) =>
@@ -54,12 +52,18 @@ export default function NumbersPage() {
       placeholderData: keepPreviousData,
     });
 
-  const allFetchedData = React.useMemo(
-    () => (data ? data.pages.flatMap((page) => page.data) : []),
-    [data]
-  );
+  const allFetchedPages = React.useMemo(() => {
+    const { pages = [] } = data ?? {};
 
-  const totalDBRowCount = data?.pages[0]?.totalRowCount ?? 0;
+    let nextPage = true;
+    const flatData = pages.flatMap((page) => {
+      const { data: pageData = [], hasNextPage } = page ?? {};
+      nextPage = Boolean(hasNextPage);
+      return pageData;
+    });
+
+    return { data: flatData ?? {}, hasNextPage: nextPage };
+  }, [data]);
 
   if (isError) {
     return <ErrorPage backgroundName={sourceLanguage} />;
@@ -82,13 +86,14 @@ export default function NumbersPage() {
       <DbViewPageHead />
 
       <NumbersTable
-        collections={headerCollections}
-        data={allFetchedData}
+        categories={headerCollections ?? []}
+        data={allFetchedPages.data}
+        hasNextPage={allFetchedPages.hasNextPage}
         fetchNextPage={fetchNextPage}
-        isFetchingNextPage={isFetchingNextPage}
+        isFetching={isFetching}
         isLoading={isLoading}
-        totalDBRowCount={totalDBRowCount}
         language={sourceLanguage}
+        fileName={fileName}
       />
       <SourceTextBrowserDrawer />
     </PageContainer>
@@ -111,6 +116,6 @@ export const getStaticProps: GetStaticProps = async ({
 
   return merge(
     // { props: { dehydratedState: dehydrate(queryClient) } },
-    i18nProps
+    i18nProps,
   );
 };
