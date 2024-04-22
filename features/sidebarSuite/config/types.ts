@@ -109,16 +109,18 @@ export type QueryParams = {
   [Key in QueryParamKeys]: Key extends QueryStringParam
     ? string | (Key extends UndefinedParams ? undefined : never)
     : Key extends QueryNumberParam
-    ? number
-    : Key extends "sort_method"
-    ? SortMethod | (Key extends UndefinedParams ? undefined : never)
-    : Key extends "limits"
-    ? LimitsParam | (Key extends UndefinedParams ? undefined : never)
-    : Key extends "target_collection"
-    ? string[] | (Key extends UndefinedParams ? undefined : never)
-    : Key extends "multi_lingual"
-    ? MultiLingalParam | (Key extends UndefinedParams ? undefined : never)
-    : never;
+      ? number
+      : Key extends "sort_method"
+        ? SortMethod | (Key extends UndefinedParams ? undefined : never)
+        : Key extends "limits"
+          ? LimitsParam | (Key extends UndefinedParams ? undefined : never)
+          : Key extends "target_collection"
+            ? string[] | (Key extends UndefinedParams ? undefined : never)
+            : Key extends "multi_lingual"
+              ?
+                  | MultiLingalParam
+                  | (Key extends UndefinedParams ? undefined : never)
+              : never;
 };
 
 export type DefaultQueryParams = Pick<QueryParams, DefaultValueParams>;
