@@ -27,7 +27,7 @@ export interface paths {
      */
     get: operations["get_visual_view_for_file_visual_view__get"];
   };
-  "/table-view/table": {
+  "/table-view/table/": {
     /**
      * Get Table View
      * @description Endpoint for the table view. Accepts filters.
