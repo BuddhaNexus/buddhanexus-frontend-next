@@ -55,5 +55,10 @@
   "search": {
     "pageTitle": "Search Results",
     "placeholder": "Search..."
+  },
+  "graph": {
+    "title": "Distribution of the top files that have matches with the Inquiry Text",
+    "collection": "Collection",
+    "matchLengths": "Match Lengths"
   }
 }

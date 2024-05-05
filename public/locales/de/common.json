@@ -55,5 +55,10 @@
   "search": {
     "pageTitle": "Suchergebnisse",
     "placeholder": "Suche..."
+  },
+  "graph": {
+    "title": "Verteilung der Top-Dateien, die Übereinstimmungen mit dem Anfragetext haben",
+    "collection": "Kollektion",
+    "matchLengths": "Übereinstimmungslängen"
   }
 }

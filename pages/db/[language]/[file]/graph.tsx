@@ -7,7 +7,6 @@ import { useDbView } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
-import { Typography } from "@mui/material";
 import { dehydrate, useQuery } from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import merge from "lodash/merge";
@@ -18,6 +17,9 @@ import { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
+
+import { Histogram } from "features/graphView/Histogram";
+import { PieChart } from "features/graphView/PieChart";
 
 export default function GraphPage() {
   const { sourceLanguage, fileName, queryParams } = useDbQueryParams();
@@ -56,11 +58,10 @@ export default function GraphPage() {
       {isLoading ? (
         <CenteredProgress />
       ) : (
-        data?.piegraphdata.map(([name, count]) => (
-          <Typography key={name}>
-            {name}: {count}
-          </Typography>
-        ))
+        <>
+          <Histogram data={data?.histogramgraphdata} />
+          <PieChart data={data?.piegraphdata} />
+        </>
       )}
       <SourceTextBrowserDrawer />
     </PageContainer>
