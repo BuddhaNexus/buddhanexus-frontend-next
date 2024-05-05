@@ -3,7 +3,6 @@
  * Do not make direct changes to the file.
  */
 
-
 export interface paths {
   "/search/": {
     /**
@@ -65,7 +64,7 @@ export interface paths {
      */
     post: operations["get_file_text_segments_and_parallels_text_view_text_parallels__post"];
   };
-  "/numbers-view/numbers": {
+  "/numbers-view/numbers/": {
     /**
      * Get Numbers View
      * @description Endpoint for numbers view.
@@ -402,7 +401,6 @@ export type $defs = Record<string, never>;
 export type external = Record<string, never>;
 
 export interface operations {
-
   /**
    * Get Search Results
    * @description Returns search results for given search string.

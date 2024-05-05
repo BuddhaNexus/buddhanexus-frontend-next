@@ -33,7 +33,7 @@ export async function getNumbersData({
 }: InfiniteFilePropApiQuery): Promise<PagedAPINumbersData> {
   // TODO:
   //    - remove type casting once response model is added to api
-  const { data: res } = await apiClient.POST("/numbers-view/numbers", {
+  const { data: res } = await apiClient.POST("/numbers-view/numbers/", {
     body: {
       file_name: fileName,
       score: 30,

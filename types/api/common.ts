@@ -1,9 +1,11 @@
 import type { DbViewEnum } from "@components/hooks/useDbView";
 import type { QueryParams } from "features/sidebarSuite/config/types";
 
+export type GraphPageGraphData = [name: string, count: number][];
+
 export interface ApiGraphPageData {
-  histogramgraphdata: [name: string, count: number][];
-  piegraphdata: [name: string, count: number][];
+  histogramgraphdata: GraphPageGraphData;
+  piegraphdata: GraphPageGraphData;
 }
 
 export interface ApiNumbersPageData {
@@ -30,10 +32,9 @@ export interface InfiniteFilePropApiQuery {
   pageNumber: number;
 }
 
-export interface InfiniteSerachApiQuery {
+export interface SerachApiQuery {
   searchTerm: string;
   queryParams: Params;
-  pageNumber: number;
 }
 
 export interface ViewPropApiQuery extends FilePropApiQuery {
