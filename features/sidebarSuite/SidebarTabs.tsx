@@ -64,7 +64,8 @@ export const DbFilePageSidebarTabPanels = () => {
 
         <UtilityOptionsSection />
 
-        <ExternalLinksSection />
+        {/*todo: uncomment */}
+        {/*<ExternalLinksSection />*/}
       </TabPanel>
       <TabPanel value="1" sx={{ px: 2 }}>
         <FilterSettings pageType="db" />

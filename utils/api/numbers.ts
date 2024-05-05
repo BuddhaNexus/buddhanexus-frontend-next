@@ -7,7 +7,8 @@ export async function getNumbersData({
   fileName,
   queryParams,
 }: FilePropApiQuery): Promise<ApiNumbersPageData> {
-  const { data } = await apiClient.POST("/numbers-view/numbers", {
+  // @ts-expect-error types need to be regenerated
+  const { data } = await apiClient.POST("/numbers-view/numbers/", {
     body: {
       file_name: fileName,
       ...parseDbPageQueryParams(queryParams),
