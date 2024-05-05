@@ -6,7 +6,6 @@ const path = require("path");
 const nextConfig = {
   i18n,
   reactStrictMode: true,
-  swcMinify: true,
   compiler: { emotion: true },
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
 };

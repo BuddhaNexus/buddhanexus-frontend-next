@@ -59,7 +59,6 @@
     "yarn": "^1.22.22"
   },
   "devDependencies": {
-    "@babel/runtime": "^7.24.5",
     "@tanstack/react-query-devtools": "^5.28.10",
     "@types/chroma-js": "^2.4.4",
     "@types/lodash": "^4.17.0",
