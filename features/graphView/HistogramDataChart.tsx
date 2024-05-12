@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { Chart } from "react-google-charts";
+import { Chart, GoogleChartWrapperChartType } from "react-google-charts";
 import { useTranslation } from "next-i18next";
 import { useTheme } from "@mui/material/styles";
 import { GraphPageGraphData } from "types/api/common";
@@ -7,32 +7,30 @@ import { GraphPageGraphData } from "types/api/common";
 import { GRAPH_BG_COLOR } from "./constants";
 
 interface Props {
-  data?: GraphPageGraphData;
+  data: GraphPageGraphData;
+  chartType?: GoogleChartWrapperChartType;
 }
 
-const HISTOGRAM_LOWER_MATCH_LIMIT = 500;
-
-export const Histogram = memo<Props>(function Histogram({ data }) {
+export const HistogramDataChart = memo<Props>(function HistogramDataChart({
+  data,
+  chartType = "Histogram",
+}) {
   const { palette } = useTheme();
   const { t } = useTranslation();
 
-  const filteredHistogramData =
-    data?.filter((item) => item[1] > HISTOGRAM_LOWER_MATCH_LIMIT) ?? [];
+  const isScatterChart = chartType === "ScatterChart";
 
   return (
     <Chart
-      chartType="Histogram"
-      data={[
-        [t("graph.collection"), t("graph.matchLengths")],
-        ...filteredHistogramData,
-      ]}
-      graph_id="histogram-chart"
+      chartType={chartType}
+      data={[[t("graph.collection"), t("graph.matchLengths")], ...data]}
+      graph_id={`histogram-${chartType}-chart`}
       options={{
-        title: t("graph.title"),
         colors: [palette.secondary.main],
         legend: { position: "none" },
         backgroundColor: GRAPH_BG_COLOR,
         chartArea: { width: "80%", height: "80%" },
+        vAxis: { scaleType: isScatterChart ? "log" : undefined },
       }}
       height="100%"
     />

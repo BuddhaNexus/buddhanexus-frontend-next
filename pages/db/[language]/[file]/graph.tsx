@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
 import type { GetStaticProps } from "next";
+import { useTranslation } from "next-i18next";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
 import { ErrorPage } from "@components/db/ErrorPage";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
@@ -18,10 +19,12 @@ import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
 
-import { Box, Paper } from "@mui/material";
+import { Box, Paper, Typography } from "@mui/material";
 import { GRAPH_BG_COLOR } from "features/graphView/constants";
-import { Histogram } from "features/graphView/Histogram";
-import { PieChart } from "features/graphView/PieChart";
+import { HistogramDataChart } from "features/graphView/HistogramDataChart";
+import { PieDataChart } from "features/graphView/PieDataChart";
+
+const HISTOGRAM_DATA_MATCH_LIMIT = 50;
 
 const GraphContainer: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -36,6 +39,8 @@ export default function GraphPage() {
   const { isFallback } = useSourceFile();
   useDbView();
 
+  const { t } = useTranslation();
+
   const { data, isLoading, isError } = useQuery<ApiGraphPageData>({
     queryKey: DbApi.GraphView.makeQueryKey({ fileName, queryParams }),
     queryFn: () =>
@@ -44,6 +49,11 @@ export default function GraphPage() {
         queryParams,
       }),
   });
+
+  const filteredHistogramData = useMemo(
+    () => data?.histogramgraphdata.slice(0, HISTOGRAM_DATA_MATCH_LIMIT) ?? [],
+    [data?.histogramgraphdata],
+  );
 
   if (isError) {
     return <ErrorPage backgroundName={sourceLanguage} />;
@@ -68,12 +78,43 @@ export default function GraphPage() {
       {isLoading ? (
         <CenteredProgress />
       ) : (
-        <Box sx={{ display: "flex", flex: 1, flexDirection: "column" }}>
+        <Box
+          sx={{
+            display: "flex",
+            height: "200vh",
+            flexDirection: "column",
+          }}
+        >
+          <Typography variant="h4" sx={{ my: 2 }}>
+            {t("graph.pieDataTitle")}
+          </Typography>
+          <Typography variant="subtitle1">
+            {t("graph.pieDataSubtitle")}
+          </Typography>
+
           <GraphContainer>
-            <PieChart data={data?.piegraphdata} />
+            <PieDataChart data={data?.piegraphdata} />
           </GraphContainer>
+
+          <Typography variant="h4" sx={{ my: 2 }}>
+            {t("graph.histogramDataTitle")}
+          </Typography>
+          <Typography variant="subtitle1">
+            {t("graph.histogramDataSubtitle")}
+          </Typography>
+
           <GraphContainer>
-            <Histogram data={data?.histogramgraphdata} />
+            <HistogramDataChart
+              chartType="Histogram"
+              data={filteredHistogramData}
+            />
+          </GraphContainer>
+
+          <GraphContainer>
+            <HistogramDataChart
+              chartType="ScatterChart"
+              data={filteredHistogramData}
+            />
           </GraphContainer>
         </Box>
       )}
