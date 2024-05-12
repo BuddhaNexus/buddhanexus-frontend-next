@@ -4,6 +4,8 @@ import { useTranslation } from "next-i18next";
 import { useTheme } from "@mui/material/styles";
 import { GraphPageGraphData } from "types/api/common";
 
+import { GRAPH_BG_COLOR } from "./constants";
+
 interface Props {
   data?: GraphPageGraphData;
 }
@@ -27,15 +29,12 @@ export const Histogram = memo<Props>(function Histogram({ data }) {
       graph_id="histogram-chart"
       options={{
         title: t("graph.title"),
-        histogram: { lastBucketPercentile: 2 },
         colors: [palette.secondary.main],
-        vAxis: { scaleType: "mirrorLog" },
         legend: { position: "none" },
-        backgroundColor: palette.background.default,
+        backgroundColor: GRAPH_BG_COLOR,
         chartArea: { width: "80%", height: "80%" },
       }}
       height="100%"
-      legendToggle
     />
   );
 });

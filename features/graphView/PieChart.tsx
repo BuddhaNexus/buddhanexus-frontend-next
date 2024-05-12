@@ -1,8 +1,9 @@
 import React, { memo } from "react";
 import { Chart } from "react-google-charts";
 import { useTranslation } from "next-i18next";
-import { useTheme } from "@mui/material/styles";
 import { GraphPageGraphData } from "types/api/common";
+
+import { GRAPH_BG_COLOR } from "./constants";
 
 interface Props {
   data?: GraphPageGraphData;
@@ -10,7 +11,6 @@ interface Props {
 
 export const PieChart = memo<Props>(function PieChart({ data }) {
   const { t } = useTranslation();
-  const { palette } = useTheme();
 
   return (
     <Chart
@@ -19,7 +19,7 @@ export const PieChart = memo<Props>(function PieChart({ data }) {
       graph_id="pie-chart"
       options={{
         is3D: true,
-        backgroundColor: palette.background.default,
+        backgroundColor: GRAPH_BG_COLOR,
         chartArea: { height: "80%" },
       }}
       style={{ paddingTop: "8px" }}

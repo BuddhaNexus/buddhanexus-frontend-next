@@ -18,8 +18,18 @@ import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
 
+import { Box, Paper } from "@mui/material";
+import { GRAPH_BG_COLOR } from "features/graphView/constants";
 import { Histogram } from "features/graphView/Histogram";
 import { PieChart } from "features/graphView/PieChart";
+
+const GraphContainer: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => (
+  <Paper sx={{ backgroundColor: GRAPH_BG_COLOR, my: 2, flex: 1 }}>
+    {children}
+  </Paper>
+);
 
 export default function GraphPage() {
   const { sourceLanguage, fileName, queryParams } = useDbQueryParams();
@@ -58,10 +68,14 @@ export default function GraphPage() {
       {isLoading ? (
         <CenteredProgress />
       ) : (
-        <>
-          <Histogram data={data?.histogramgraphdata} />
-          <PieChart data={data?.piegraphdata} />
-        </>
+        <Box sx={{ display: "flex", flex: 1, flexDirection: "column" }}>
+          <GraphContainer>
+            <PieChart data={data?.piegraphdata} />
+          </GraphContainer>
+          <GraphContainer>
+            <Histogram data={data?.histogramgraphdata} />
+          </GraphContainer>
+        </Box>
       )}
       <SourceTextBrowserDrawer />
     </PageContainer>
