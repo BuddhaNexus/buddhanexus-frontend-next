@@ -66,7 +66,7 @@ export const ExternalLinksSection = () => {
     queryFn: () => DbApi.ExternalLinksData.call({ file_name: fileName }),
   });
 
-  // TODO: sort out dark theme icons, http://localhost:3000/db/tib/K01D0003_H0003/table
+  // TODO: sort out dark theme icons, http://localhost:3000/db/tib/K01D0003_H0003/table & http://localhost:3000/db/pli/dn34/numbers
   // const isDarkTheme = materialTheme.palette.mode === "dark"
 
   if (data && Object.keys(data).length > 0) {

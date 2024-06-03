@@ -12,7 +12,7 @@ const parseAPITableDownloadData = (
 ) => {
   return {
     // example filePath: download/dn2_download.xlsx
-    url: `${RESULTS_DOWNLOAD_ROOT_URL}/${filePath}`,
+    url: `${RESULTS_DOWNLOAD_ROOT_URL}${filePath}`,
     // Creates a unique, timestamped file name to avoid overwriting existing files on the user's computer.
     name: `BuddhaNexus_${fileName}_${new Date()
       .toISOString()
@@ -33,6 +33,8 @@ export async function getParallelDownloadData(
   const { data: filePath } = await apiClient.POST("/table-view/download/", {
     body: parseAPIRequestBody(body),
   });
+
+  // example filePath: download/dn34_download.xlsx
 
   if (!filePath) {
     throw new Error("Table View download file path is undefined");
