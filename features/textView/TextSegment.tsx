@@ -67,7 +67,7 @@ export const TextSegment = ({
   ]);
 
   return (
-    <>
+    <div className={styles.segmentWrapper}>
       <span
         className={`${styles.segmentNumber} ${
           isSegmentSelected && styles["segmentNumber--selected"]
@@ -132,6 +132,6 @@ export const TextSegment = ({
           </button>
         );
       })}
-    </>
+    </div>
   );
 };
