@@ -63,9 +63,10 @@ export default function TextPage() {
         lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
     });
 
-  const allData = useMemo(
-    () => (data ? data.pages.flatMap((page) => page.data) : []),
-    [data],
+  const allParallels = useMemo(
+    // todo: load more than 1 page
+    () => data?.pages[0]?.data.items ?? [],
+    [data?.pages],
   );
 
   if (isError) {
@@ -92,7 +93,7 @@ export default function TextPage() {
         <CenteredProgress />
       ) : (
         <TextView
-          data={allData}
+          data={allParallels}
           onEndReached={fetchNextPage}
           onStartReached={fetchPreviousPage}
         />

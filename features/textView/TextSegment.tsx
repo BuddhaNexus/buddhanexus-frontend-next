@@ -57,7 +57,7 @@ export const TextSegment = ({
     if (!isSegmentSelected || typeof selectedSegmentIndex !== "number") return;
     const locationFromQueryParams = segmentText[selectedSegmentIndex];
     if (!locationFromQueryParams) return;
-    setSelectedSegmentMatches(locationFromQueryParams.matches);
+    setSelectedSegmentMatches(locationFromQueryParams.matches as string[]);
   }, [
     isSegmentSelected,
     segmentText,
@@ -85,7 +85,7 @@ export const TextSegment = ({
         const isSegmentPartSelected =
           isSegmentSelected && selectedSegmentIndex === i;
 
-        if (matches.length === 0) {
+        if (!matches || matches.length === 0) {
           return (
             <span key={segmentKey} className={styles.segment}>
               {textContent}
@@ -94,7 +94,8 @@ export const TextSegment = ({
         }
 
         const color = shouldUseOldSegmentColors
-          ? OLD_WEBSITE_SEGMENT_COLORS[highlightColor] ??
+          ? ((highlightColor &&
+              OLD_WEBSITE_SEGMENT_COLORS[highlightColor]) as string) ??
             OLD_WEBSITE_SEGMENT_COLORS.at(-1)
           : colorScale(highlightColor).hex();
 
@@ -111,9 +112,10 @@ export const TextSegment = ({
               color,
             }}
             onClick={() => {
+              if (!matches) return;
               updateSelectedLocationInGlobalState({
                 id: segmentNumber,
-                matches,
+                matches: matches as string[],
                 index: i,
               });
             }}
@@ -123,7 +125,7 @@ export const TextSegment = ({
               event.preventDefault();
               updateSelectedLocationInGlobalState({
                 id: segmentNumber,
-                matches,
+                matches: matches as string[],
                 index: i,
               });
             }}

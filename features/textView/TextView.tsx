@@ -9,13 +9,13 @@ import chroma from "chroma-js";
 import { selectedSegmentMatchesAtom } from "features/atoms/textView";
 import { useAtomValue } from "jotai/index";
 import { useQueryParam } from "use-query-params";
-import { ParsedTextViewParallelsData } from "utils/api/endpoints/text-view/text-parallels";
+import { ParsedTextViewParallels } from "utils/api/endpoints/text-view/text-parallels";
 
 import { TextSegment } from "./TextSegment";
 import TextViewMiddleParallels from "./TextViewMiddleParallels";
 
 interface Props {
-  data: ParsedTextViewParallelsData;
+  data: ParsedTextViewParallels;
   onEndReached: () => void;
   onStartReached: () => void;
 }
