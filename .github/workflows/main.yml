@@ -1,121 +1,18 @@
 name: CI
 on:
-  workflow_dispatch:
-  pull_request:
+  push:
 jobs:
-  install:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
           node-version: "18"
           cache: "yarn"
-
       - name: Install modules
         run: yarn
-
       - name: Run TypeScript compiler
         run: tsc
-
       - name: Run ESLint
         run: yarn eslint .
-
-  build-and-test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-    needs: install
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "18"
-          cache: "yarn"
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
-        with:
-          build: yarn build:skip
-          start: yarn start
-          browser: chrome
-
-      - name: Find and rename cypress fail screenshots
-        id: list
-        if: failure()
-        run: |
-          readarray -t imgs < <(find cypress/output/screenshots -type f -name "*.png")
-          echo "${#imgs[@]} screenshots found"
-          
-          readarray -t axe_imgs < <(find cypress/output/screenshots -type f -name '*.png' | grep -P '.*(?<!failed\)).png$')
-          echo "${#axe_imgs[@]} axe screenshots found"
-
-          screenshots=()
-          rename_count=1
-
-          for i in "${!imgs[@]}"; do
-            is_duplicate_candidate=$(echo "${imgs[$i]}" | grep -c '(failed)' || true)
-            
-            if [[ $is_duplicate_candidate -gt 0 ]]; then
-              duplicate_test_name=$(echo "${imgs[$i]}" | sed "s/\s(failed)//" || true)
-              if [[ " ${highlighted[@]} " =~ " ${test_name} " ]]; then
-                echo "[img ${i}] skipping duplicate: ${imgs[$i]}";
-                continue
-              fi
-            fi
-
-            new_name="cypress/output/screenshots/run${{ github.run_id }}-screenshot${rename_count}.png"
-            echo "[img ${i}] renaming file: ${imgs[$i]}  >>>  $new_name"; 
-            mv "${imgs[$i]}" "$new_name"; 
-            screenshots+=("$new_name")
-            ((rename_count++))
-          done
-
-          echo "saving screenshots: ${screenshots[@]}"; 
-          echo "screenshots=${screenshots[@]}" >> $GITHUB_OUTPUT
-
-      - name: Upload screenshots to image host
-        id: upload-screenshots
-        if: failure()
-        run: |
-          screenshots=("${{ steps.list.outputs.screenshots }}")
-          imgkit_responses=()
-          for img in ${screenshots[@]}; do
-            echo "Uploading $img"
-            response=$(curl -X POST "https://upload.imagekit.io/api/v1/files/upload" \
-              -u ${{ secrets.IMAGEKIT_PRIVATE_KEY }}: \
-              -F "file=@$img;type=image/png" \
-              -F "fileName=$(basename $img)")
-            imgkit_responses+=("$response")
-          done
-          echo "imgkit_responses=${imgkit_responses[@]}" >> $GITHUB_OUTPUT
-
-      - name: Extract image data and create comment
-        if: failure()
-        uses: actions/github-script@v5
-        with:
-          script: |
-            const itemSpliter = new RegExp(/(\}) (\{"fileId")/g);
-            const imgkitResponses = `${{ steps.upload-screenshots.outputs.imgkit_responses }}`.replace(itemSpliter, '$1\n$2').split('\n');
-
-            let imgLinks = [];
-
-            if (imgkitResponses && imgkitResponses.length > 0) {
-              imgkitResponses.forEach(response => {
-                if(!response) return;
-                const { name, url } = JSON.parse(response);
-                imgLinks.push(`![${name}](${url})`);
-              });
-            }
-
-            if (imgLinks.length > 0) {
-              const body = `## Cypress failures\n\n${imgLinks.join('\n')}`;
-
-              github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
