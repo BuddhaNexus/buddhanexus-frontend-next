@@ -229,7 +229,11 @@ export const SourceTextSearchInput = ({
             endAdornment: (
               <React.Fragment>
                 {isLoading ? (
-                  <CircularProgress color="inherit" size={20} />
+                  <CircularProgress
+                    aria-label={t("db.loadingTextMenu")}
+                    color="inherit"
+                    size={20}
+                  />
                 ) : null}
                 {params.InputProps.endAdornment}
               </React.Fragment>
