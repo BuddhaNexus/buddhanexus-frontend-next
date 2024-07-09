@@ -80,8 +80,7 @@ export default function TextPage() {
   });
 
   const allParallels = useMemo(
-    // todo: load more than 1 page
-    () => data?.pages[0]?.data.items ?? [],
+    () => (data?.pages ? data.pages.flatMap((page) => page.data.items) : []),
     [data?.pages],
   );
 
