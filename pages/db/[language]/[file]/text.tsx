@@ -37,6 +37,8 @@ export default function TextPage() {
   useDbView();
 
   const {
+    // changing these properties (by selecting the segments)
+    // should not reload the page.
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selectedSegment,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -44,24 +46,38 @@ export default function TextPage() {
     ...paramsThatShouldRefreshText
   } = queryParams;
 
-  const { data, fetchNextPage, fetchPreviousPage, isLoading, isError } =
-    useInfiniteQuery({
-      initialPageParam: 0,
-      queryKey: DbApi.TextView.makeQueryKey({
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    fetchPreviousPage,
+    isLoading,
+    isError,
+  } = useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: DbApi.TextView.makeQueryKey({
+      file_name: fileName,
+      ...paramsThatShouldRefreshText,
+    }),
+    queryFn: ({ pageParam }) =>
+      DbApi.TextView.call({
         file_name: fileName,
-        ...paramsThatShouldRefreshText,
+        ...defaultQueryParams,
+        ...queryParams,
+        page_number: pageParam,
+        // TODO: pass segment, but only if first load :/
+        active_segment: selectedSegment,
       }),
-      queryFn: ({ pageParam }) =>
-        DbApi.TextView.call({
-          file_name: fileName,
-          ...defaultQueryParams,
-          ...queryParams,
-          page_number: pageParam,
-        }),
-      getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
-      getPreviousPageParam: (lastPage) =>
-        lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
-    });
+    getNextPageParam: (lastPage) => {
+      // last page, as indicated by the BE response
+      if (lastPage.pageNumber === lastPage.data.totalPages - 1) {
+        return undefined;
+      }
+      return lastPage.pageNumber + 1;
+    },
+    getPreviousPageParam: (lastPage) =>
+      lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
+  });
 
   const allParallels = useMemo(
     // todo: load more than 1 page
@@ -94,6 +110,7 @@ export default function TextPage() {
       ) : (
         <TextView
           data={allParallels}
+          hasNextPage={hasNextPage}
           onEndReached={fetchNextPage}
           onStartReached={fetchPreviousPage}
         />

@@ -18,6 +18,7 @@ interface Props {
   data: ParsedTextViewParallels;
   onEndReached: () => void;
   onStartReached: () => void;
+  hasNextPage: boolean;
 }
 
 // todo: check other elements in segmentText
@@ -25,6 +26,7 @@ export default function TextView({
   data,
   onEndReached,
   onStartReached,
+  hasNextPage,
 }: Props) {
   const [selectedSegmentId] = useQueryParam("selectedSegment");
 
@@ -71,7 +73,7 @@ export default function TextView({
             startReached={onStartReached}
             overscan={20}
             components={{
-              Footer: hasData ? Footer : undefined,
+              Footer: hasData && hasNextPage ? Footer : undefined,
               EmptyPlaceholder,
             }}
           />
