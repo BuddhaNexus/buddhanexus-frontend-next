@@ -75,6 +75,8 @@ const Row = (props: ListChildComponentProps) => {
     <Box
       {...dataSetProps}
       key={key}
+      data-testid="db-source-text-input-list-item"
+      data-testdata-file-name={textName}
       style={inlineStyle}
       sx={{
         display: "flex",
@@ -150,7 +152,7 @@ const ListboxComponent = React.forwardRef<
   const gridRef = useResetCache(itemCount);
 
   return (
-    <div ref={ref}>
+    <div ref={ref} data-testid="db-source-text-input-list">
       <OuterElementContext.Provider value={other}>
         {/* TODO: replace react-window with newer package */}
         {/* @ts-expect-error inherited VariableSizeList issue */}
@@ -218,6 +220,7 @@ export const SourceTextSearchInput = ({
       renderInput={(params) => (
         <TextField
           {...params}
+          data-testid="db-source-text-selector-input"
           inputRef={inputRef}
           autoFocus={Boolean(autoFocus)}
           label={t("db.searchInputPlaceholder")}
@@ -226,7 +229,11 @@ export const SourceTextSearchInput = ({
             endAdornment: (
               <React.Fragment>
                 {isLoading ? (
-                  <CircularProgress color="inherit" size={20} />
+                  <CircularProgress
+                    aria-label={t("db.loadingTextMenu")}
+                    color="inherit"
+                    size={20}
+                  />
                 ) : null}
                 {params.InputProps.endAdornment}
               </React.Fragment>

@@ -1,6 +1,5 @@
 export const filters = {
   language: "language",
-  searchString: "search_string",
   limits: "limits",
   score: "score",
   parLength: "par_length",
@@ -39,9 +38,9 @@ export type UtilityOption = (typeof utilityOption)[keyof typeof utilityOption];
 
 /** This creates a list of unique queried settings available across the SidebarSuite.
  */
-const queryParams = {
+export const uniqueQueryParams = {
   language: filters.language,
-  searchString: filters.searchString,
+  searchString: "search_string",
   limits: filters.limits,
   score: filters.score,
   parLength: filters.parLength,
@@ -69,7 +68,7 @@ const local = {
 
 type PageSettings = {
   search: {
-    filters: Pick<typeof filters, "language" | "searchString" | "limits">;
+    filters: Pick<typeof filters, "language" | "limits">;
     displayOptions: null;
     utilityOptions: Pick<
       typeof utilityOption,
@@ -94,7 +93,6 @@ export const pageSettings: PageSettings = {
   search: {
     filters: {
       language: "language",
-      searchString: "search_string",
       limits: "limits",
     },
     displayOptions: null,
@@ -127,7 +125,7 @@ export const pageSettings: PageSettings = {
 } as const;
 
 export const uniqueSettings = {
-  queryParams,
+  queryParams: uniqueQueryParams,
   remote,
   local,
 } as const;

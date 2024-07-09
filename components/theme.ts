@@ -170,12 +170,19 @@ export const getDesignTokens = ({
     },
     MuiFormLabel: {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           minWidth: 0,
           "@media (min-width: 0px)": {
             fontSize: "1.1rem",
           },
-        },
+          ...(theme.palette.mode === "dark"
+            ? {
+                color: "white",
+              }
+            : {
+                color: theme.palette.grey[900],
+              }),
+        }),
       },
     },
     MuiInputLabel: {

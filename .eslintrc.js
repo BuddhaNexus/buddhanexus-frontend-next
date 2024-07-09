@@ -188,6 +188,11 @@ const rules = {
       ignoreNonDOM: true,
     },
   ],
+  // https://github.com/jest-community/eslint-plugin-jest/blob/main/docs/rules/valid-expect.md — Cypress docs show this is an invalid complaint
+  "jest/valid-expect": "off",
+  "jest/no-done-callback": "off",
+  "jest/expect-expect": "off",
+  "jest/expect-expect": "off",
 };
 
 module.exports = {
@@ -205,6 +210,15 @@ module.exports = {
       rules,
       parserOptions: {
         project: true, // Specify it only for TypeScript files
+      },
+    },
+    {
+      files: ["*.cy.ts"],
+      rules: {
+        ...rules,
+        "no-invalid-this": "off",
+        "func-names": "off",
+        "no-unused-expressions": "off",
       },
     },
   ],

@@ -55,7 +55,11 @@ export const DbViewSelector = () => {
         onChange={(e: SelectChangeEvent) => handleChange(e)}
       >
         {availableViews.map((view) => (
-          <MenuItem key={view} value={view}>
+          <MenuItem
+            key={view}
+            data-testid="db-view-selector-list-item"
+            value={view}
+          >
             {t(`dbViewLabels.${view}`)}
           </MenuItem>
         ))}

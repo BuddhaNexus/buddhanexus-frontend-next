@@ -36,7 +36,8 @@
     "score": "Punktzahl",
     "matches": "Übereinstimmungen",
     "clearSelectedSegment": "Ausgewähltes Segment löschen",
-    "segmentMatches": "Segmentübereinstimmungen"
+    "segmentMatches": "Segmentübereinstimmungen",
+    "loadingTextMenu": "Loading text menu"
   },
   "news": {
     "title": "Nachrichten",
