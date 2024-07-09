@@ -1,8 +1,11 @@
 name: CI
 on:
   push:
+  pull_request:
+  workflow_dispatch:
+
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,3 +19,32 @@ jobs:
         run: tsc
       - name: Run ESLint
         run: yarn eslint .
+
+  build-and-test:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "yarn"
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: yarn build:compile
+          start: yarn start
+          browser: chrome
+      - name: Archive Cypress artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-artifacts
+          path: |
+            cypress/output/screenshots
+            cypress/output/videos
+          retention-days: 7
