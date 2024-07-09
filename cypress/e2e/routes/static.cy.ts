@@ -49,8 +49,6 @@ describe("Static routes", () => {
     )}`;
     runBasicPageTestBatch(url);
 
-    // TODO
-
     otherLocales.forEach((locale) => {
       runBasicPageTestBatch(`/${locale}/${url}`);
     });

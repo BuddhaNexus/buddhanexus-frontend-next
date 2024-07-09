@@ -15,6 +15,7 @@ import {
   Autocomplete,
   autocompleteClasses,
   Box,
+  CircularProgress,
   ListSubheader,
   Popper,
   TextField,
@@ -226,7 +227,12 @@ export const SourceTextSearchInput = ({
           InputProps={{
             ...params.InputProps,
             endAdornment: (
-              <React.Fragment>{params.InputProps.endAdornment}</React.Fragment>
+              <React.Fragment>
+                {isLoading ? (
+                  <CircularProgress color="inherit" size={20} />
+                ) : null}
+                {params.InputProps.endAdornment}
+              </React.Fragment>
             ),
           }}
         />
