@@ -25,8 +25,8 @@ import {
 import { styled } from "@mui/styles";
 import { useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
-import type { DatabaseText } from "types/api/menus";
 import { DbApi } from "utils/api/dbApi";
+import type { ParsedTextFileMenuItem } from "utils/api/endpoints/menus/files";
 
 const OuterElementContext = React.createContext({});
 
@@ -68,13 +68,14 @@ const Row = (props: ListChildComponentProps) => {
     );
   }
 
-  const [dataSetProps, { name, textName, fileName }] = dataSet;
+  const [{ key, ...dataSetProps }, { name, textName }] = dataSet;
 
   return (
     <Box
       {...dataSetProps}
+      key={key}
       data-testid="db-source-text-input-list-item"
-      data-testdata-file-name={fileName}
+      data-testdata-file-name={textName}
       style={inlineStyle}
       sx={{
         display: "flex",
@@ -86,6 +87,7 @@ const Row = (props: ListChildComponentProps) => {
       component="li"
     >
       <Typography
+        key={String(Math.random())}
         component="option"
         sx={{
           flex: 1,
@@ -95,9 +97,10 @@ const Row = (props: ListChildComponentProps) => {
         {name}
       </Typography>
       <Typography
+        {...dataSetProps}
+        key={`${key}_text`}
         component="small"
         variant="subtitle2"
-        {...dataSetProps}
         sx={{ textTransform: "uppercase", fontSize: 12, whiteSpace: "normal" }}
       >
         {textName}
@@ -193,9 +196,9 @@ export const SourceTextSearchInput = ({
   const { sourceLanguage } = useDbQueryParams();
   const dbView = useAtomValue(currentViewAtom);
 
-  const { data, isLoading } = useQuery<DatabaseText[]>({
+  const { data, isLoading } = useQuery<ParsedTextFileMenuItem[]>({
     queryKey: DbApi.SourceTextMenu.makeQueryKey(sourceLanguage),
-    queryFn: () => DbApi.SourceTextMenu.call(sourceLanguage),
+    queryFn: () => DbApi.SourceTextMenu.call({ language: sourceLanguage }),
   });
 
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -207,7 +210,7 @@ export const SourceTextSearchInput = ({
 
   // TODO: Add pagination and fuzzy search on BE
   return (
-    <Autocomplete<DatabaseText>
+    <Autocomplete<ParsedTextFileMenuItem>
       sx={{ my: 1 }}
       PopperComponent={StyledPopper}
       ListboxComponent={ListboxComponent}

@@ -2,7 +2,16 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
-First, run the development server (make sure to use [yarn](https://classic.yarnpkg.com/en/docs/install#mac-stable) and not `npm`!):
+First, run the development server (make sure to use [yarn](https://yarnpkg.com/getting-started/install) and not `npm`\*!):
+
+**\*note:** the project doesn't use yarn classic (it's been deprecated), so install yarn if needed: https://yarnpkg.com/getting-started/install
+
+```sh
+corepack enable # if needed
+yarn install
+```
+
+### Dev mode:
 
 ```bash
 yarn dev
@@ -16,17 +25,68 @@ You can start editing the page by modifying `pages/index.tsx`. The page auto-upd
 
 The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
-## API type code generation & API Client
+### Building locally:
 
-The project uses `[openapi-typescript](https://openapi-ts.pages.dev/introduction)` and `[openapi-fetch](https://openapi-ts.pages.dev/openapi-fetch/)` to interface between the backend.
+The project generates many, many static pages which in most cases will preclude the possibility of running a normal build locally.
+
+It is possible to use the [compile mode](https://github.com/vercel/next.js/blob/c0ae6f6ffdad865de660e897ecbeafda2bca78da/docs/02-app/02-api-reference/08-next-cli.mdx#L189) locally:
+
+```sh
+yarn build:compile
+yarn start
+```
+
+## API BE<>FE intergration
+
+https://buddhanexus2.kc-tbts.uni-hamburg.de/api/docs#/ (as an intrim measure the BN api is hosted at https://dharmamitra.org/api-db/docs#/ with the api model available at https://dharmamitra.org/api-db/openapi.json)
+
+The `utils/api/endpoints` directory mirrors the BE api endpoint structure
+
+### API type code generation & API Client
+
+The project uses [`openapi-typescript`](https://openapi-ts.pages.dev/introduction) and [`openapi-fetch`](https://openapi-ts.pages.dev/openapi-fetch/) to interface between the backend.
 
 Types are generated from the API project's [OpenAPI docs page](https://buddhanexus2.kc-tbts.uni-hamburg.de/api/docs#/) by running:
 
-```
+```sh
 yarn openapi-ts
 ```
 
 `openapi-fetch`'s api client (instantiated in `utils/api/client.ts`) can then be used to fetch typed data ([see docs](https://openapi-ts.pages.dev/openapi-fetch/)).
+
+### API type files & conventions
+
+**note:** at the time of writing, there is still some inconsistency in BE naming conventions. Some FE parsing needs may be eliminated with BE consistency. Review an update accordingly.
+
+- `utils/api/types.ts`:
+  - this is the **source of truth** for BE<>FE typing
+  - it contains codegen derivate types **only** to create shortened, standardized API type aliases
+  - all types begin with `API`
+  - all endpoints should have corresponding  `API<endpoint-name>RequestQuery` (for `GET` requests), or `API<endpoint-name>RequestBody` (for `POST` requests), and `API<endpoint-name>ResponseData` types
+
+- `utils/api/endpoints/<endpoint-name>.ts`: 
+  - co-locates endpoint fetch function and, **if** required, its return type.
+  - [inferred return types are favoured](https://www.youtube.com/watch?v=I6V2FkW1ozQ)
+    - in most cases this should be possible, but if eg. doing some complicated mutation, or using the `fetchNextPage` prop from `useInfiniteQuery` it might be necessary to add a `Promise<DataType>` return type. 
+  - if needed, parsed return types should
+    - be created from the parser's `ReturnType` if possible
+    - follow the `Parsed<endpoint-name>Data` naming convention (parsed return consituent item types should begin with `Parsed`, eg. `ParsedSearchResult`)
+
+## I18n
+
+- Supported locales are defined in `next-i18next.config.js`.
+- Namespaces are defined in `types/i18next.d.ts`.
+
+### `tsx` pages
+
+- Namespace files (with localized content) are created in `public/locales/`
+- Namespaces are imported with `getI18NextStaticProps` at page level.
+
+### `mdx` pages
+
+- Pages for each supported locale are created in `content/pages` (or a dedicated content directory for nested routes eg. `news`). See: [MDX page i18n](#mdx-page-i18n-draft) for more.
+
+Note: the project uses the term `locale` to refer to the user's language and the term `language` to refer to database languages (Pali, Sanskrit, Chinese and Tibetan).
 
 ## MDX page i18n (Draft)
 
@@ -119,6 +179,3 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
-```
-
-```

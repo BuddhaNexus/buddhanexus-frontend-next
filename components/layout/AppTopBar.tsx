@@ -48,7 +48,6 @@ export const AppTopBar = () => {
   const [isMounted, setIsMounted] = useState(false);
 
   const isHomeRoute = route === "/";
-  const isATIIRoute = route.startsWith("/atii");
   const isSearchRoute = route.startsWith("/search");
 
   useEffect(() => {
@@ -82,7 +81,7 @@ export const AppTopBar = () => {
                 display: "inline-flex",
                 alignItems: "center",
               }}
-              href={isATIIRoute ? "/atii" : "/"}
+              href="/"
               underline="none"
               noWrap
             >
@@ -97,12 +96,8 @@ export const AppTopBar = () => {
               >
                 <Box
                   component="img"
-                  src={
-                    isATIIRoute
-                      ? "/assets/images/atii_logo.png"
-                      : "/assets/icons/bn_tree.svg"
-                  }
-                  width={isATIIRoute ? undefined : 64}
+                  src="/assets/logos/bn_tree_only.svg"
+                  width={68}
                   sx={{
                     maxHeight: 48,
                     minWidth: 48,
@@ -112,10 +107,10 @@ export const AppTopBar = () => {
                   }}
                   alt="logo"
                 />
-                {!isHomeRoute && !isATIIRoute && (
+                {!isHomeRoute && (
                   <Box
                     component="img"
-                    src="/assets/icons/bn_name.svg"
+                    src="/assets/logos/bn_text_only.svg"
                     width={144}
                     sx={{
                       maxHeight: 24,
@@ -147,15 +142,10 @@ export const AppTopBar = () => {
               overflow: "auto",
             }}
           >
-            {isATIIRoute ? (
-              <AppBarLink title="BuddhaNexus" href="/" />
-            ) : (
-              <>
-                <DatabaseMenu />
-                <AppBarLink title={t("header.guide")} href="/guide" />
-                <AppBarLink title="ATII" href="/atii" />
-              </>
-            )}
+            <>
+              <DatabaseMenu />
+              <AppBarLink title={t("header.guide")} href="/guide" />
+            </>
           </Box>
           <IconButton
             sx={{ mr: 1 }}
@@ -179,7 +169,7 @@ export const AppTopBar = () => {
         </Toolbar>
       </AppBar>
       {!isSearchRoute && (
-        <aside id="mobile-search" aria-label="mobile search">
+        <aside id="mobile-search" aria-label={t("search.search")}>
           <GlobalSearchMobile />
         </aside>
       )}

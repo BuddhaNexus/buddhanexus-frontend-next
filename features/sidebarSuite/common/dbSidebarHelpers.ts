@@ -1,31 +1,31 @@
-import type { DbViewEnum } from "@components/hooks/useDbView";
 import type { SvgIconTypeMap } from "@mui/material";
 import type { OverridableComponent } from "@mui/material/OverridableComponent";
+import type { UtilityOption } from "features/sidebarSuite/config/settings";
 import type {
   MenuOmission,
   MenuSetting,
   QueryParams,
-  UtilityOption,
+  SettingOmissionContext,
 } from "features/sidebarSuite/config/types";
 import type { Script } from "features/sidebarSuite/subComponents/settings/TextScriptOption";
 import { EwtsConverter } from "tibetan-ewts-converter";
-import { getParallelDownloadData } from "utils/api/downloads";
+import { getParallelDownloadData } from "utils/api/endpoints/table-view/downloads";
 import { SourceLanguage } from "utils/constants";
 
 export const isSettingOmitted = ({
   omissions,
   settingName,
   language,
-  view,
+  pageContext,
 }: {
   omissions: MenuOmission;
   settingName: MenuSetting;
   language: SourceLanguage;
-  view: DbViewEnum;
+  pageContext: SettingOmissionContext;
 }) => {
   return Boolean(
-    omissions?.[settingName]?.[view]?.some((omittedLang) =>
-      ["allLangs", language].includes(omittedLang),
+    omissions?.[settingName]?.[pageContext]?.some((omittedLang) =>
+      ["all", language].includes(omittedLang),
     ),
   );
 };
@@ -48,6 +48,9 @@ interface UtilityClickHandlerProps {
   };
   href: string;
   popperAnchorStateHandler: PopperAnchorStateHandler;
+  messages: {
+    subject: string;
+  };
 }
 
 type UtilityOptionProps = {
@@ -73,9 +76,13 @@ export const onDownload = async ({
 }: UtilityClickHandlerProps) => {
   const [anchorEl, setAnchorEl] = popperAnchorStateHandler;
 
+  const { fileName, queryParams } = download;
+
   const file = await getParallelDownloadData({
-    fileName: download.fileName,
-    queryParams: download.queryParams,
+    file_name: fileName,
+    ...queryParams,
+    // TODO: determine what is needed for this prop
+    download_data: "",
   });
 
   if (file) {
@@ -127,21 +134,25 @@ export const onEmailQueryLink = ({
   fileName,
   popperAnchorStateHandler,
   href,
+  messages,
 }: UtilityClickHandlerProps) => {
   const [anchorEl, setAnchorEl] = popperAnchorStateHandler;
 
-  const encodedURL = encodeURIComponent(href);
+  const encodedURL = encodeURI(href);
 
-  const subject = `BuddhaNexus serach results - ${fileName.toUpperCase()}`;
-  const body = `Here is a link to search results for ${fileName.toUpperCase()}: ${encodedURL}`;
+  const subject = fileName
+    ? `${messages.subject} - ${fileName.toUpperCase()}`
+    : messages.subject;
 
   const link = document.createElement("a");
-  link.href = `mailto:?subject=${subject}&body=${body}`;
+  link.href = `mailto:?subject=${subject}&body=${encodedURL}`;
   link.click();
   setAnchorEl({
     ...defaultAnchorEls,
     emailQueryLink: anchorEl.emailQueryLink ? null : event.currentTarget,
   });
+
+  link.remove();
 };
 
 const ewts = new EwtsConverter();
@@ -154,7 +165,7 @@ export const enscriptText = ({
   language: SourceLanguage;
   script: Script;
 }) => {
-  return script === "Wylie" && language === SourceLanguage.TIBETAN
+  return script === "Unicode" && language === SourceLanguage.TIBETAN
     ? ewts.to_unicode(text)
     : text;
 };

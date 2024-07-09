@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { DbApi } from "utils/api/dbApi";
+import type { APILimits } from "utils/api/types";
 import type { SourceLanguage } from "utils/constants";
 
 export const queryCacheTimeDefaults = {
@@ -23,7 +24,7 @@ export async function prefetchDefaultDbPageData(
 
   await queryClient.prefetchQuery({
     queryKey: DbApi.SidebarSourceTexts.makeQueryKey(sourceLanguage),
-    queryFn: () => DbApi.SidebarSourceTexts.call(sourceLanguage),
+    queryFn: () => DbApi.SidebarSourceTexts.call({ language: sourceLanguage }),
   });
 
   return queryClient;
@@ -44,7 +45,7 @@ export async function prefetchDbResultsPageData(
 
   await queryClient.prefetchQuery({
     queryKey: DbApi.TextDisplayName.makeQueryKey(fileName),
-    queryFn: () => DbApi.TextDisplayName.call(fileName),
+    queryFn: () => DbApi.TextDisplayName.call({ segmentnr: fileName }),
   });
 
   // TODO: review. disabled for now to lighten build burden.
@@ -53,11 +54,17 @@ export async function prefetchDbResultsPageData(
   //   queryFn: () => DbApi.SidebarSourceTexts.call(sourceLanguage),
   // });
 
-  // TODO: confirm spect for multi_lingal query param. For discussion see: https://github.com/BuddhaNexus/buddhanexus-frontend-next/issues/117
+  // TODO: confirm spec for multi_lingal query param. For discussion see: https://github.com/BuddhaNexus/buddhanexus-frontend-next/issues/117
   // await queryClient.prefetchQuery({
   //   queryKey: DbApi.AvailableLanguagesData.makeQueryKey(fileName),
   //   queryFn: () => DbApi.AvailableLanguagesData.call(fileName),
   // });
 
   return queryClient;
+}
+
+export function parseAPIRequestBody<T extends { limits?: APILimits }>(body: T) {
+  const limits = body?.limits ? JSON.parse(body.limits as string) : {};
+
+  return { ...body, limits };
 }

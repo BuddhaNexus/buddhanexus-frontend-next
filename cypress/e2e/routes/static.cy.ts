@@ -2,7 +2,7 @@ import "cypress/support/commands";
 
 import { runBasicPageTestBatch } from "cypress/support/tests";
 import { otherLocales } from "cypress/support/utils";
-import { searchPageFilter } from "features/sidebarSuite/config/settings";
+import { uniqueQueryParams } from "features/sidebarSuite/config/settings";
 import { SOURCE_LANGUAGES } from "utils/constants";
 
 describe("Static routes", () => {
@@ -44,7 +44,7 @@ describe("Static routes", () => {
   });
 
   it("renders accessible, search page in dark and light mode and all locals", () => {
-    const url = `/search?${searchPageFilter.search}=${encodeURI(
+    const url = `/search?${uniqueQueryParams.searchString}=${encodeURI(
       "Kacci pana vo, anuruddhā, samaggā sammodamānā",
     )}`;
     runBasicPageTestBatch(url);

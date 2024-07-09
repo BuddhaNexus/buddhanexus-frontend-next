@@ -13,7 +13,7 @@ export const DbViewPageHead = () => {
 
   const { data: displayName, isLoading } = useQuery({
     queryKey: DbApi.TextDisplayName.makeQueryKey(fileName),
-    queryFn: () => DbApi.TextDisplayName.call(fileName),
+    queryFn: () => DbApi.TextDisplayName.call({ segmentnr: fileName }),
   });
 
   const dbView = useAtomValue(currentViewAtom);
@@ -21,9 +21,9 @@ export const DbViewPageHead = () => {
   return (
     <>
       <NextSeo
-        title={`BuddhaNexus — ${fileName} :: ${displayName} :: ${startCase(
-          dbView,
-        )} View`}
+        title={`BuddhaNexus — ${fileName} :: ${
+          displayName ? `${displayName} ::` : ""
+        } ${startCase(dbView)} View`}
       />
       <QueryPageTopStack />
       {isLoading ? (
@@ -32,7 +32,8 @@ export const DbViewPageHead = () => {
         </Typography>
       ) : (
         <Typography variant="h2" component="h1" mb={1}>
-          {fileName?.toUpperCase()}: {displayName}
+          {fileName?.toUpperCase()}
+          {displayName ? `: ${displayName}` : ""}
         </Typography>
       )}
     </>

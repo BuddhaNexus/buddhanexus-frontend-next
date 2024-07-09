@@ -5,20 +5,20 @@ import { ErrorPage } from "@components/db/ErrorPage";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import { useDbView } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
-import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
 import { dehydrate, useInfiniteQuery } from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import TextView from "features/textView/TextView";
 import merge from "lodash/merge";
-import type { PagedResponse } from "types/api/common";
-import type { TextPageData } from "types/api/text";
 import { prefetchDbResultsPageData } from "utils/api/apiQueryUtils";
 import { DbApi } from "utils/api/dbApi";
 import type { SourceLanguage } from "utils/constants";
 import { getI18NextStaticProps } from "utils/nextJsHelpers";
-
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
+import LoadingSpinner from "@components/common/LoadingSpinner";
+import { textViewFilterComparisonAtom } from "features/atoms";
+import { useAtom } from "jotai";
+import { NumberParam, StringParam, useQueryParam } from "use-query-params";
 
 /**
  * TODO
@@ -31,27 +31,73 @@ export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers"
  *
  * @constructor
  */
+
 export default function TextPage() {
-  const { sourceLanguage, fileName, queryParams } = useDbQueryParams();
+  const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
+    useDbQueryParams();
   const { isFallback } = useSourceFile();
 
   useDbView();
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { selectedSegment, ...paramsThatShouldRefreshText } = queryParams;
+  const [selectedSegment, setSelectedSegment] = useQueryParam(
+    "selectedSegment",
+    StringParam,
+  );
+
+  const [, setSelectedSegmentIndex] = useQueryParam(
+    "selectedSegmentIndex",
+    NumberParam,
+  );
+
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectedSegment: popId,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    selectedSegmentIndex: popIndex,
+    ...paramsThatShouldRefreshText
+  } = queryParams;
+
+  const [textViewFilterComparison, setTextViewFilterComparison] = useAtom(
+    textViewFilterComparisonAtom,
+  );
+
+  // Clears TextViewMiddleParallels on queryParams change to avoid rendering non-existing parallel matches on new params. Run before data query to prevent content flashing.
+  React.useEffect(() => {
+    const paramString = JSON.stringify(paramsThatShouldRefreshText);
+
+    if (
+      !selectedSegment ||
+      paramString === textViewFilterComparison ||
+      (!textViewFilterComparison && paramString.length > 0)
+    ) {
+      setTextViewFilterComparison(paramString);
+    } else {
+      setSelectedSegment(undefined);
+      setSelectedSegmentIndex(undefined);
+      setTextViewFilterComparison(paramString);
+    }
+  }, [
+    selectedSegment,
+    setSelectedSegment,
+    setSelectedSegmentIndex,
+    paramsThatShouldRefreshText,
+    textViewFilterComparison,
+    setTextViewFilterComparison,
+  ]);
 
   const { data, fetchNextPage, fetchPreviousPage, isLoading, isError } =
-    useInfiniteQuery<PagedResponse<TextPageData>>({
+    useInfiniteQuery({
       initialPageParam: 0,
       queryKey: DbApi.TextView.makeQueryKey({
-        fileName,
-        queryParams: paramsThatShouldRefreshText,
+        file_name: fileName,
+        ...paramsThatShouldRefreshText,
       }),
       queryFn: ({ pageParam }) =>
         DbApi.TextView.call({
-          fileName,
-          queryParams,
-          pageNumber: pageParam as number,
+          file_name: fileName,
+          ...defaultQueryParams,
+          ...queryParams,
+          page_number: pageParam,
         }),
       getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
       getPreviousPageParam: (lastPage) =>
@@ -70,7 +116,7 @@ export default function TextPage() {
   if (isFallback) {
     return (
       <PageContainer backgroundName={sourceLanguage}>
-        <CenteredProgress />
+        <LoadingSpinner />
       </PageContainer>
     );
   }
@@ -83,8 +129,8 @@ export default function TextPage() {
     >
       <DbViewPageHead />
 
-      {isLoading || !data ? (
-        <CenteredProgress />
+      {isLoading ? (
+        <LoadingSpinner />
       ) : (
         <TextView
           data={allData}

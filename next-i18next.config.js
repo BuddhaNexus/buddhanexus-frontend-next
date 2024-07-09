@@ -1,15 +1,12 @@
 /* eslint-disable @typescript-eslint/no-require-imports,@typescript-eslint/no-var-requires */
 const HttpBackend = require("i18next-http-backend/cjs");
-const HMRPlugin =
-  process.env.NODE_ENV !== "production"
-    ? require("i18next-hmr/plugin").HMRPlugin
-    : undefined;
 
-// https://github.com/felixmosh/i18next-hmr/blob/master/examples/next-with-next-i18next-v13/next-i18next.config.js
+const supportedLocales = ["en", "de"];
+
 module.exports = {
   i18n: {
     defaultLocale: "en",
-    locales: ["en", "de"],
+    locales: supportedLocales,
   },
   ...(typeof window !== "undefined"
     ? {
@@ -24,7 +21,7 @@ module.exports = {
   use:
     process.env.NODE_ENV !== "production"
       ? typeof window !== "undefined"
-        ? [HttpBackend, new HMRPlugin({ webpack: { client: true } })]
-        : [new HMRPlugin({ webpack: { server: true } })]
+        ? [HttpBackend]
+        : []
       : [],
 };

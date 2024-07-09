@@ -3,6 +3,7 @@ import { useTranslation } from "next-i18next";
 import { SourceLanguageChip } from "@components/common/SourceLanguageChip";
 import CopyIcon from "@mui/icons-material/ContentCopy";
 import PercentIcon from "@mui/icons-material/Percent";
+import StraightenIcon from "@mui/icons-material/Straighten";
 import {
   Box,
   Card,
@@ -13,24 +14,39 @@ import {
   Link,
   Tooltip,
 } from "@mui/material";
-import type { ApiTextSegment } from "types/api/common";
+import type { APIFullText } from "utils/api/types";
 import type { SourceLanguage } from "utils/constants";
 
 import { ParallelSegmentText } from "./ParallelSegmentText";
+
+export const makeTextViewSegmentPath = ({
+  segmentNumber,
+  language,
+}: {
+  segmentNumber: string;
+  language: SourceLanguage;
+}) => {
+  // Example: ["dn1:1.1.1_0", "dn1:1.1.2_0"] -> ["dn1", "1.1.1_0"]
+  const [fileName] = segmentNumber.split(":");
+
+  const urlEncodedSegmentNumber = encodeURIComponent(segmentNumber);
+
+  return `/db/${language}/${fileName}/text?selectedSegment=${urlEncodedSegmentNumber}&selectedSegmentIndex=0`;
+};
 
 interface ParallelSegmentProps {
   language: SourceLanguage;
   displayName: string;
   length: number;
 
-  text: ApiTextSegment[];
-  textSegmentNumbers: [start: string, end: string];
+  text: APIFullText[];
+  textSegmentNumberRange: string;
 
   score?: number;
 }
 
 export const ParallelSegment = ({
-  textSegmentNumbers,
+  textSegmentNumberRange,
   text,
   score,
   length,
@@ -41,17 +57,18 @@ export const ParallelSegment = ({
 
   const sourceLanguageName = t(`language.${language}`);
 
-  // Example: ["dn1:1.1.1_0", "dn1:1.1.2_0"] -> ["dn1", "1.1.1_0"]
-  const [textName, segmentName] = textSegmentNumbers[0].split(":");
-  const infoToCopy = `${textSegmentNumbers.join("-")}: ${displayName}`;
+  const infoToCopy = `${textSegmentNumberRange}: ${displayName}`;
 
   // Example of copied data: dn1:1.1.1_0–1.1.2_0: Brahmajāla Sutta
   const copyTextInfoToClipboard = useCallback(async () => {
     await navigator.clipboard.writeText(infoToCopy);
   }, [infoToCopy]);
 
+  const linkSegmentNumber =
+    textSegmentNumberRange.split("-")[0] ?? textSegmentNumberRange;
+
   return (
-    <Card sx={{ flex: 1, wordBreak: "break-all" }}>
+    <Card sx={{ flex: 1, wordBreak: "break-all", my: 1 }} elevation={1}>
       <CardContent
         sx={{
           display: "flex",
@@ -68,10 +85,15 @@ export const ParallelSegment = ({
           {/* File Name */}
           <Tooltip title={displayName} PopperProps={{ disablePortal: true }}>
             <Link
-              href={`/db/${language}/${textName}/text?selectedSegment=${segmentName}`}
+              href={makeTextViewSegmentPath({
+                language,
+                segmentNumber: linkSegmentNumber,
+              })}
               sx={{ display: "inline-block", wordBreak: "break-word", m: 0.5 }}
+              target="_blank"
+              rel="noreferrer noopenner"
             >
-              {textSegmentNumbers}
+              {textSegmentNumberRange}
             </Link>
           </Tooltip>
           <IconButton
@@ -92,23 +114,32 @@ export const ParallelSegment = ({
           }}
         >
           {score && (
-            <Tooltip title="Score" PopperProps={{ disablePortal: true }}>
+            <Tooltip
+              title={`${t("db.score")}: ${Math.round(score * 100) / 100}`}
+              PopperProps={{ disablePortal: true }}
+            >
               <Chip
                 size="small"
                 color="primary"
                 variant="outlined"
                 icon={<PercentIcon />}
                 label={score}
-                sx={{ mr: 0.5, my: 0.5, p: 0.5 }}
+                sx={{ m: 0.5, p: 0.5 }}
               />
             </Tooltip>
           )}
 
-          <Chip
-            size="small"
-            label={`Length: ${length}`}
-            sx={{ m: 0.5, p: 0.5 }}
-          />
+          <Tooltip
+            title={`${t("db.length")}: ${length}`}
+            PopperProps={{ disablePortal: true }}
+          >
+            <Chip
+              size="small"
+              label={length}
+              icon={<StraightenIcon />}
+              sx={{ m: 0.5, p: 0.5 }}
+            />
+          </Tooltip>
         </Box>
       </CardContent>
 

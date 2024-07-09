@@ -4,12 +4,15 @@ import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import { useQuery } from "@tanstack/react-query";
+import { BD_RESULTS_LIMIT } from "utils/api/constants";
 import { DbApi } from "utils/api/dbApi";
+
+import CappedMatchesChip from "./CappedMatchesChip";
 
 export default function ParallelsChip() {
   const { t } = useTranslation("settings");
 
-  const { fileName, queryParams } = useDbQueryParams();
+  const { fileName, defaultQueryParams, queryParams } = useDbQueryParams();
 
   // ignore some params that shouldn't result in refetching this query
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -18,13 +21,14 @@ export default function ParallelsChip() {
   const { data, isLoading } = useQuery({
     // TODO: - see if the query can return result before main results
     queryKey: DbApi.ParallelCount.makeQueryKey({
-      fileName,
-      queryParams: restOfQueryParams,
+      file_name: fileName,
+      ...restOfQueryParams,
     }),
     queryFn: () =>
       DbApi.ParallelCount.call({
-        fileName,
-        queryParams,
+        file_name: fileName,
+        ...defaultQueryParams,
+        ...queryParams,
       }),
   });
 
@@ -37,6 +41,20 @@ export default function ParallelsChip() {
       setParallelCount(data.parallel_count);
     }
   }, [data]);
+
+  const isMatchesCapped = parallelCount && parallelCount >= BD_RESULTS_LIMIT;
+
+  if (isMatchesCapped) {
+    return (
+      <CappedMatchesChip
+        label={t("resultsHead.matches")}
+        message={t("resultsHead.cappedMessage", {
+          max: BD_RESULTS_LIMIT,
+        })}
+        matches={parallelCount}
+      />
+    );
+  }
 
   return (
     <Chip
