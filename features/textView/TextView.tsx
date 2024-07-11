@@ -64,7 +64,7 @@ export default function TextView({
         <Allotment.Pane>
           <Virtuoso
             totalCount={data.length}
-            data={hasData ? data : undefined}
+            data={hasData && data.length > 0 ? data : undefined}
             itemContent={(_, dataSegment) => (
               <TextSegment data={dataSegment} colorScale={colorScale} />
             )}

@@ -18,10 +18,10 @@ import { OLD_WEBSITE_SEGMENT_COLORS } from "./constants";
 import styles from "./textSegment.module.scss";
 
 export const TextSegment = ({
-  data: { segmentText, segmentNumber },
+  data,
   colorScale,
 }: {
-  data: ParsedTextViewParallel;
+  data?: ParsedTextViewParallel;
   colorScale: Scale;
 }) => {
   const { mode } = useColorScheme();
@@ -42,7 +42,7 @@ export const TextSegment = ({
   const scriptSelection = useAtomValue(scriptSelectionAtom);
   const setSelectedSegmentMatches = useSetAtom(selectedSegmentMatchesAtom);
 
-  const isSegmentSelected = selectedSegmentId === segmentNumber;
+  const isSegmentSelected = selectedSegmentId === data?.segmentNumber;
 
   const updateSelectedLocationInGlobalState = useCallback(
     (location: { id: string; index: number; matches: string[] }) => {
@@ -55,12 +55,12 @@ export const TextSegment = ({
   // find matches for the selected segment when the page is first rendered
   useLayoutEffect(() => {
     if (!isSegmentSelected || typeof selectedSegmentIndex !== "number") return;
-    const locationFromQueryParams = segmentText[selectedSegmentIndex];
+    const locationFromQueryParams = data?.segmentText[selectedSegmentIndex];
     if (!locationFromQueryParams) return;
     setSelectedSegmentMatches(locationFromQueryParams.matches as string[]);
   }, [
     isSegmentSelected,
-    segmentText,
+    data?.segmentText,
     selectedSegmentId,
     selectedSegmentIndex,
     setSelectedSegmentMatches,
@@ -72,11 +72,11 @@ export const TextSegment = ({
         className={`${styles.segmentNumber} ${
           isSegmentSelected && styles["segmentNumber--selected"]
         } ${!shouldShowSegmentNumbers && styles["segmentNumber--hidden"]}`}
-        data-segmentnumber={segmentNumber}
+        data-segmentnumber={data?.segmentNumber}
       />
 
-      {segmentText.map(({ text, highlightColor, matches }, i) => {
-        const segmentKey = segmentNumber + i;
+      {data?.segmentText.map(({ text, highlightColor, matches }, i) => {
+        const segmentKey = data?.segmentNumber + i;
         const textContent = enscriptText({
           text,
           script: scriptSelection,
@@ -114,7 +114,7 @@ export const TextSegment = ({
             onClick={() => {
               if (!matches) return;
               updateSelectedLocationInGlobalState({
-                id: segmentNumber,
+                id: data?.segmentNumber,
                 matches: matches as string[],
                 index: i,
               });
@@ -124,7 +124,7 @@ export const TextSegment = ({
               if (event.key !== " " && event.key !== "Enter") return;
               event.preventDefault();
               updateSelectedLocationInGlobalState({
-                id: segmentNumber,
+                id: data?.segmentNumber,
                 matches: matches as string[],
                 index: i,
               });
