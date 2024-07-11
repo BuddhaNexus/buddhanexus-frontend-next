@@ -74,13 +74,13 @@ export default function TextPage() {
       }),
     getNextPageParam: (lastPage) => {
       // last page, as indicated by the BE response
-      if (lastPage.pageNumber === lastPage.data.totalPages - 1) {
+      if (lastPage.data.page === lastPage.data.totalPages - 1) {
         return undefined;
       }
       return lastPage.pageNumber + 1;
     },
     getPreviousPageParam: (lastPage) =>
-      lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
+      lastPage.data.page === 0 ? undefined : lastPage.data.page - 1,
   });
 
   const allParallels = useMemo(
