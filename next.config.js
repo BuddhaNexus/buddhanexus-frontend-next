@@ -24,18 +24,18 @@ const nextConfig = {
   },
 
   experimental: {
-    turbo: {
-      resolveExtensions: [
-        ".mdx",
-        ".md",
-        ".tsx",
-        ".ts",
-        ".jsx",
-        ".js",
-        ".mjs",
-        ".json",
-      ],
-    },
+    // turbo: {
+    //   resolveExtensions: [
+    //     ".mdx",
+    //     ".md",
+    //     ".tsx",
+    //     ".ts",
+    //     ".jsx",
+    //     ".js",
+    //     ".mjs",
+    //     ".json",
+    //   ],
+    // },
   },
 };
 
