@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import type { GetStaticProps } from "next";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
 import { ErrorPage } from "@components/db/ErrorPage";
@@ -36,6 +36,8 @@ export default function TextPage() {
 
   useDbView();
 
+  const hasReceivedDataForSegment = useRef(false);
+
   const {
     // changing these properties (by selecting the segments)
     // should not reload the page.
@@ -46,8 +48,13 @@ export default function TextPage() {
     ...apiQueryParams
   } = queryParams;
 
+  useEffect(() => {
+    hasReceivedDataForSegment.current = false;
+  }, [selectedSegment]);
+
   const {
     data,
+    isSuccess,
     fetchNextPage,
     hasNextPage,
     fetchPreviousPage,
@@ -63,15 +70,27 @@ export default function TextPage() {
       },
       selectedSegment,
     ),
-    queryFn: ({ pageParam }) =>
-      DbApi.TextView.call({
+    queryFn: ({ pageParam }) => {
+      // We pass the active_segment, but only on the first page load :/
+      //
+      // This is a bit of a workaround to enable scrolling up. Explanation:
+      // When `active_segment` is inside a query param, the BE always responds with the page that includes the segment.
+      // We pass it to the backend and we assume the page is 0. In the BE response, it tells us that we're on page 1,
+      // but there' still no way to request page 0 when `active_segment` is included.
+      //
+      // A possible issue with this workaround is that it only runs on the client side.
+      // We may need to revisit after moving to the Next.js App Router
+      const active_segment = hasReceivedDataForSegment.current
+        ? undefined
+        : selectedSegment;
+      return DbApi.TextView.call({
         file_name: fileName,
         ...defaultQueryParams,
         ...apiQueryParams,
         page_number: pageParam,
-        // TODO: pass segment, but only if first load :/
-        active_segment: selectedSegment,
-      }),
+        active_segment,
+      });
+    },
     getNextPageParam: (lastPage) => {
       // last page, as indicated by the BE response
       if (lastPage.data.page === lastPage.data.totalPages - 1) {
@@ -82,6 +101,10 @@ export default function TextPage() {
     getPreviousPageParam: (lastPage) =>
       lastPage.data.page === 0 ? undefined : lastPage.data.page - 1,
   });
+
+  useEffect(() => {
+    if (isSuccess) hasReceivedDataForSegment.current = true;
+  }, [isSuccess]);
 
   const allParallels = useMemo(
     () => (data?.pages ? data.pages.flatMap((page) => page.data.items) : []),
