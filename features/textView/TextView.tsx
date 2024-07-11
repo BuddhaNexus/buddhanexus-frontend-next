@@ -69,6 +69,7 @@ export default function TextView({
               <TextSegment data={dataSegment} colorScale={colorScale} />
             )}
             initialTopMostItemIndex={selectedSegmentIndexInData}
+            initialItemCount={5} // for SSR
             endReached={onEndReached}
             startReached={onStartReached}
             overscan={20}

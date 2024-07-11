@@ -43,7 +43,7 @@ export default function TextPage() {
     selectedSegment,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     selectedSegmentIndex,
-    ...paramsThatShouldRefreshText
+    ...apiQueryParams
   } = queryParams;
 
   const {
@@ -54,16 +54,20 @@ export default function TextPage() {
     isLoading,
     isError,
   } = useInfiniteQuery({
+    enabled: Boolean(fileName),
     initialPageParam: 0,
-    queryKey: DbApi.TextView.makeQueryKey({
-      file_name: fileName,
-      ...paramsThatShouldRefreshText,
-    }),
+    queryKey: DbApi.TextView.makeQueryKey(
+      {
+        file_name: fileName,
+        ...apiQueryParams,
+      },
+      selectedSegment,
+    ),
     queryFn: ({ pageParam }) =>
       DbApi.TextView.call({
         file_name: fileName,
         ...defaultQueryParams,
-        ...queryParams,
+        ...apiQueryParams,
         page_number: pageParam,
         // TODO: pass segment, but only if first load :/
         active_segment: selectedSegment,
