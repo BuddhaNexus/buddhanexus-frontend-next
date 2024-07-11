@@ -95,6 +95,9 @@
     ],
     "*.js": "eslint --cache"
   },
+  "resolutions": {
+    "@babel/runtime": "^7.24.6"
+  },
   "volta": {
     "node": "20.12.2"
   },
