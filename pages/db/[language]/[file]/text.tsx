@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import type { GetStaticProps } from "next";
+import { useSearchParams } from "next/navigation";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
 import { ErrorPage } from "@components/db/ErrorPage";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
@@ -18,26 +19,9 @@ import { getI18NextStaticProps } from "utils/nextJsHelpers";
 
 export { getDbViewFileStaticPaths as getStaticPaths } from "utils/nextJsHelpers";
 
-/**
- * TODO
- * 1. Display text on left side
- * 2. Allow selection
- * 3. Grab parallels for middle (https://buddhanexus2.kc-tbts.uni-hamburg.de/api/text-view/middle)
- * 4. Display using table view components
- * ?: use /text-view/text-parallels/
- * * Split pane: use https://github.com/johnwalley/allotment
- *
- * @constructor
- */
-export default function TextPage() {
-  const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
-    useDbQueryParams();
-  const { isFallback } = useSourceFile();
+type QueryParams = Record<string, string>;
 
-  useDbView();
-
-  const hasReceivedDataForSegment = useRef(false);
-
+const cleanUpQueryParams = (queryParams: QueryParams): QueryParams => {
   const {
     // changing these properties (by selecting the segments)
     // should not reload the page.
@@ -47,10 +31,34 @@ export default function TextPage() {
     selectedSegmentIndex,
     ...apiQueryParams
   } = queryParams;
+  return apiQueryParams;
+};
+
+export default function TextPage() {
+  const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
+    useDbQueryParams();
+  const { isFallback } = useSourceFile();
+
+  useDbView();
+
+  const hasReceivedDataForSegment = useRef(false);
+
+  const paginationState = useRef<
+    [startEdgePage?: number, endEdgePage?: number]
+  >([0, 0]);
+
+  const searchParams = useSearchParams();
+
+  const selectedSegment = searchParams.get("selectedSegment");
+  // const selectedSegmentIndex = searchParams.get("selectedSegmentIndex");
 
   useEffect(() => {
     hasReceivedDataForSegment.current = false;
   }, [selectedSegment]);
+
+  // todo: scrolling up is janky with segment
+
+  const apiQueryParams = cleanUpQueryParams(queryParams);
 
   const {
     data,
@@ -62,49 +70,82 @@ export default function TextPage() {
     isError,
   } = useInfiniteQuery({
     enabled: Boolean(fileName),
-    initialPageParam: 0,
+    initialPageParam: selectedSegment ? undefined : 0,
     queryKey: DbApi.TextView.makeQueryKey(
       {
         file_name: fileName,
         ...apiQueryParams,
       },
-      selectedSegment,
+      selectedSegment ?? undefined,
     ),
     queryFn: ({ pageParam }) => {
       // We pass the active_segment, but only on the first page load :/
       //
       // This is a bit of a workaround to enable scrolling up. Explanation:
       // When `active_segment` is inside a query param, the BE always responds with the page that includes the segment.
-      // We pass it to the backend and we assume the page is 0. In the BE response, it tells us that we're on page 1,
-      // but there' still no way to request page 0 when `active_segment` is included.
+      // We pass it to the backend, and we assume the page is 0. In the BE response, it tells us that we're on page 1,
+      // but there's no way to request page 0 when `active_segment` is included.
       //
       // A possible issue with this workaround is that it only runs on the client side.
       // We may need to revisit after moving to the Next.js App Router
       const active_segment = hasReceivedDataForSegment.current
         ? undefined
         : selectedSegment;
+      // hasReceivedDataForSegment.current = true;
       return DbApi.TextView.call({
         file_name: fileName,
         ...defaultQueryParams,
         ...apiQueryParams,
         page_number: pageParam,
-        active_segment,
+        active_segment: active_segment ?? undefined,
       });
     },
+
+    getPreviousPageParam: () => {
+      // if it's the first page, don't fetch any more
+      if (!paginationState.current[0]) return undefined;
+      return paginationState.current[0] === 0
+        ? undefined
+        : paginationState.current[0] - 1;
+    },
+
     getNextPageParam: (lastPage) => {
       // last page, as indicated by the BE response
-      if (lastPage.data.page === lastPage.data.totalPages - 1) {
-        return undefined;
-      }
-      return lastPage.pageNumber + 1;
+      if (!paginationState.current[1]) return undefined;
+      return paginationState.current[1] === lastPage.data.totalPages - 1
+        ? undefined
+        : paginationState.current[1] + 1;
     },
-    getPreviousPageParam: (lastPage) =>
-      lastPage.data.page === 0 ? undefined : lastPage.data.page - 1,
   });
 
   useEffect(() => {
     if (isSuccess) hasReceivedDataForSegment.current = true;
   }, [isSuccess]);
+
+  useEffect(
+    function handleApiResponse() {
+      if (!data?.pages[0]) return;
+      const currentPageCount = data?.pages?.length;
+      // when the first page is loaded, set the current page number to the one received from the BE
+      if (currentPageCount === 1) {
+        paginationState.current[0] = data?.pages[0].data.page;
+        paginationState.current[1] = data?.pages[0].data.page;
+      }
+    },
+    [data?.pages],
+  );
+
+  // console.log(data?.pages);
+
+  const handleFetchingPreviousPage = useCallback(async () => {
+    const response = await fetchPreviousPage();
+    paginationState.current[0] = response.data?.pages[0]?.data.page;
+  }, [fetchPreviousPage]);
+
+  const handleFetchingNextPage = useCallback(async () => {
+    const response = await fetchNextPage();
+    paginationState.current[1] = response.data?.pages.at(-1)?.data.page;
+  }, [fetchNextPage]);
 
   const allParallels = useMemo(
     () => (data?.pages ? data.pages.flatMap((page) => page.data.items) : []),
@@ -137,8 +178,8 @@ export default function TextPage() {
         <TextView
           data={allParallels}
           hasNextPage={hasNextPage}
-          onEndReached={fetchNextPage}
-          onStartReached={fetchPreviousPage}
+          onEndReached={handleFetchingNextPage}
+          onStartReached={handleFetchingPreviousPage}
         />
       )}
 
