@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { VirtuosoHandle } from "react-virtuoso";
 import type { GetStaticProps } from "next";
 import { useSearchParams } from "next/navigation";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
@@ -10,7 +11,7 @@ import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
 import { dehydrate, useInfiniteQuery } from "@tanstack/react-query";
 import { SourceTextBrowserDrawer } from "features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
-import TextView from "features/textView/TextView";
+import { TextView } from "features/textView/TextView";
 import merge from "lodash/merge";
 import { prefetchDbResultsPageData } from "utils/api/apiQueryUtils";
 import { DbApi } from "utils/api/dbApi";
@@ -50,15 +51,12 @@ export default function TextPage() {
   const searchParams = useSearchParams();
 
   const selectedSegment = searchParams.get("selectedSegment");
-  // const selectedSegmentIndex = searchParams.get("selectedSegmentIndex");
-
-  useEffect(() => {
-    hasReceivedDataForSegment.current = false;
-  }, [selectedSegment]);
 
   // todo: scrolling up is janky with segment
 
   const apiQueryParams = cleanUpQueryParams(queryParams);
+
+  const virtualizedListRef = useRef<VirtuosoHandle | null>(null);
 
   const {
     data,
@@ -72,10 +70,7 @@ export default function TextPage() {
     enabled: Boolean(fileName),
     initialPageParam: selectedSegment ? undefined : 0,
     queryKey: DbApi.TextView.makeQueryKey(
-      {
-        file_name: fileName,
-        ...apiQueryParams,
-      },
+      { file_name: fileName, ...apiQueryParams },
       selectedSegment ?? undefined,
     ),
     queryFn: ({ pageParam }) => {
@@ -91,7 +86,6 @@ export default function TextPage() {
       const active_segment = hasReceivedDataForSegment.current
         ? undefined
         : selectedSegment;
-      // hasReceivedDataForSegment.current = true;
       return DbApi.TextView.call({
         file_name: fileName,
         ...defaultQueryParams,
@@ -102,7 +96,7 @@ export default function TextPage() {
     },
 
     getPreviousPageParam: () => {
-      // if it's the first page, don't fetch any more
+      // if it's the first page, don't fetch more
       if (!paginationState.current[0]) return undefined;
       return paginationState.current[0] === 0
         ? undefined
@@ -111,20 +105,28 @@ export default function TextPage() {
 
     getNextPageParam: (lastPage) => {
       // last page, as indicated by the BE response
-      if (!paginationState.current[1]) return undefined;
+      if (paginationState.current[1] === undefined) return undefined;
       return paginationState.current[1] === lastPage.data.totalPages - 1
         ? undefined
         : paginationState.current[1] + 1;
     },
   });
 
+  // see queryFn comment above
   useEffect(() => {
     if (isSuccess) hasReceivedDataForSegment.current = true;
   }, [isSuccess]);
 
+  // reset this value after the selectedSegment is changed
+  useEffect(() => {
+    hasReceivedDataForSegment.current = false;
+  }, [selectedSegment]);
+
   useEffect(
     function handleApiResponse() {
-      if (!data?.pages[0]) return;
+      if (!data?.pages[0]) {
+        return;
+      }
       const currentPageCount = data?.pages?.length;
       // when the first page is loaded, set the current page number to the one received from the BE
       if (currentPageCount === 1) {
@@ -135,11 +137,19 @@ export default function TextPage() {
     [data?.pages],
   );
 
-  // console.log(data?.pages);
-
   const handleFetchingPreviousPage = useCallback(async () => {
     const response = await fetchPreviousPage();
     paginationState.current[0] = response.data?.pages[0]?.data.page;
+    const fetchedPageSize = response.data?.pages[0]?.data.items?.length;
+
+    // the user is scrolling up.
+    // we have to offset the indices of the items that we prepend to the page
+    // otherwise the scroll will land at the top of the page that was just fetched.
+    if (paginationState.current[0] === 0 && paginationState.current[1] === 0) {
+      // we're on the first page and there's only one page fetched. Do nothing
+    } else {
+      virtualizedListRef.current?.scrollToIndex(fetchedPageSize ?? 0);
+    }
   }, [fetchPreviousPage]);
 
   const handleFetchingNextPage = useCallback(async () => {
@@ -176,6 +186,7 @@ export default function TextPage() {
         <CenteredProgress />
       ) : (
         <TextView
+          ref={virtualizedListRef}
           data={allParallels}
           hasNextPage={hasNextPage}
           onEndReached={handleFetchingNextPage}
