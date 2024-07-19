@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { VirtuosoHandle } from "react-virtuoso";
 import type { GetStaticProps } from "next";
 import { useSearchParams } from "next/navigation";
@@ -35,12 +42,16 @@ const cleanUpQueryParams = (queryParams: QueryParams): QueryParams => {
   return apiQueryParams;
 };
 
+const START_INDEX = 1_000_000;
+
 export default function TextPage() {
   const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
     useDbQueryParams();
   const { isFallback } = useSourceFile();
 
   useDbView();
+
+  const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX);
 
   const hasReceivedDataForSegment = useRef(false);
 
@@ -49,11 +60,7 @@ export default function TextPage() {
   >([0, 0]);
 
   const searchParams = useSearchParams();
-
   const selectedSegment = searchParams.get("selectedSegment");
-
-  // todo: scrolling up is janky with segment
-
   const apiQueryParams = cleanUpQueryParams(queryParams);
 
   const virtualizedListRef = useRef<VirtuosoHandle | null>(null);
@@ -86,6 +93,7 @@ export default function TextPage() {
       const active_segment = hasReceivedDataForSegment.current
         ? undefined
         : selectedSegment;
+
       return DbApi.TextView.call({
         file_name: fileName,
         ...defaultQueryParams,
@@ -97,18 +105,18 @@ export default function TextPage() {
 
     getPreviousPageParam: () => {
       // if it's the first page, don't fetch more
-      if (!paginationState.current[0]) return undefined;
-      return paginationState.current[0] === 0
-        ? undefined
-        : paginationState.current[0] - 1;
+      const [startEdge] = paginationState.current;
+      if (startEdge === undefined || startEdge === 0) return undefined;
+      return startEdge - 1;
     },
 
     getNextPageParam: (lastPage) => {
-      // last page, as indicated by the BE response
-      if (paginationState.current[1] === undefined) return undefined;
-      return paginationState.current[1] === lastPage.data.totalPages - 1
-        ? undefined
-        : paginationState.current[1] + 1;
+      const [, endEdge] = paginationState.current;
+      if (endEdge === undefined || endEdge === lastPage.data.totalPages - 1) {
+        // last page, as indicated by the BE response
+        return undefined;
+      }
+      return endEdge + 1;
     },
   });
 
@@ -138,18 +146,19 @@ export default function TextPage() {
   );
 
   const handleFetchingPreviousPage = useCallback(async () => {
-    const response = await fetchPreviousPage();
-    paginationState.current[0] = response.data?.pages[0]?.data.page;
-    const fetchedPageSize = response.data?.pages[0]?.data.items?.length;
+    // already on first page
+    if (paginationState.current[0] === 0) return;
+
+    const { data: responseData } = await fetchPreviousPage();
+    // eslint-disable-next-line require-atomic-updates
+    paginationState.current[0] = responseData?.pages[0]?.data.page;
+
+    const fetchedPageSize = responseData?.pages[0]?.data.items?.length;
+    if (!fetchedPageSize) return;
 
     // the user is scrolling up.
-    // we have to offset the indices of the items that we prepend to the page
-    // otherwise the scroll will land at the top of the page that was just fetched.
-    if (paginationState.current[0] === 0 && paginationState.current[1] === 0) {
-      // we're on the first page and there's only one page fetched. Do nothing
-    } else {
-      virtualizedListRef.current?.scrollToIndex(fetchedPageSize ?? 0);
-    }
+    // offset the new list items when prepending them to the page.
+    setFirstItemIndex((prevIndex) => prevIndex - fetchedPageSize);
   }, [fetchPreviousPage]);
 
   const handleFetchingNextPage = useCallback(async () => {
@@ -180,21 +189,24 @@ export default function TextPage() {
       backgroundName={sourceLanguage}
       isQueryResultsPage
     >
-      <DbViewPageHead />
+      <Suspense>
+        <DbViewPageHead />
 
-      {isLoading || !data ? (
-        <CenteredProgress />
-      ) : (
-        <TextView
-          ref={virtualizedListRef}
-          data={allParallels}
-          hasNextPage={hasNextPage}
-          onEndReached={handleFetchingNextPage}
-          onStartReached={handleFetchingPreviousPage}
-        />
-      )}
+        {isLoading || !data ? (
+          <CenteredProgress />
+        ) : (
+          <TextView
+            ref={virtualizedListRef}
+            data={allParallels}
+            hasNextPage={hasNextPage}
+            firstItemIndex={firstItemIndex}
+            onStartReached={handleFetchingPreviousPage}
+            onEndReached={handleFetchingNextPage}
+          />
+        )}
 
-      <SourceTextBrowserDrawer />
+        <SourceTextBrowserDrawer />
+      </Suspense>
     </PageContainer>
   );
 }

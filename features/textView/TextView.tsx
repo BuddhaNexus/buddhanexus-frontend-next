@@ -17,13 +17,17 @@ import TextViewMiddleParallels from "./TextViewMiddleParallels";
 interface Props {
   data: ParsedTextViewParallels;
   onEndReached: () => void;
-  onStartReached: () => void;
+  onStartReached: () => Promise<void>;
   hasNextPage: boolean;
+  firstItemIndex?: number;
 }
 
 // todo: check other elements in segmentText
 export const TextView = forwardRef<VirtuosoHandle, Props>(
-  ({ data, onEndReached, onStartReached, hasNextPage }, virtualizedListRef) => {
+  (
+    { data, onEndReached, onStartReached, firstItemIndex, hasNextPage },
+    virtualizedListRef,
+  ) => {
     const [selectedSegmentId] = useQueryParam("selectedSegment");
 
     const selectedSegmentMatches = useAtomValue(selectedSegmentMatchesAtom);
@@ -62,20 +66,21 @@ export const TextView = forwardRef<VirtuosoHandle, Props>(
           <Allotment.Pane>
             <Virtuoso
               ref={virtualizedListRef}
-              totalCount={data.length}
-              data={hasData && data.length > 0 ? data : undefined}
-              itemContent={(_, dataSegment) => (
-                <TextSegment data={dataSegment} colorScale={colorScale} />
-              )}
+              firstItemIndex={firstItemIndex}
               initialTopMostItemIndex={selectedSegmentIndexInData}
-              initialItemCount={5} // for SSR
-              endReached={onEndReached}
+              data={hasData && data.length > 0 ? data : undefined}
               startReached={onStartReached}
+              endReached={onEndReached}
+              overscan={20}
+              totalCount={data.length}
+              initialItemCount={5} // for SSR
               components={{
                 Footer: hasData && hasNextPage ? Footer : undefined,
                 EmptyPlaceholder,
               }}
-              // atTopStateChange={(hmm) => {}}
+              itemContent={(_, dataSegment) => (
+                <TextSegment data={dataSegment} colorScale={colorScale} />
+              )}
             />
           </Allotment.Pane>
 
