@@ -70,6 +70,7 @@ export default function TextPage() {
     hasNextPage,
     fetchPreviousPage,
     isLoading,
+    isFetching,
     isError,
   } = useInfiniteQuery({
     enabled: Boolean(fileName),
@@ -185,6 +186,7 @@ export default function TextPage() {
     <PageContainer
       maxWidth="xl"
       backgroundName={sourceLanguage}
+      isLoading={isLoading || isFetching}
       isQueryResultsPage
     >
       <Suspense>
