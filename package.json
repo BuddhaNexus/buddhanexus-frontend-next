@@ -55,7 +55,7 @@
     "react-google-charts": "^4.0.1",
     "react-i18next": "^14.1.1",
     "react-use-downloader": "^1.2.8",
-    "react-virtuoso": "^4.7.10",
+    "react-virtuoso": "^4.7.12",
     "react-window": "^1.8.10",
     "sharp": "^0.33.3",
     "tibetan-ewts-converter": "^1.0.1",

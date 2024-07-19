@@ -3139,7 +3139,7 @@ __metadata:
     react-google-charts: "npm:^4.0.1"
     react-i18next: "npm:^14.1.1"
     react-use-downloader: "npm:^1.2.8"
-    react-virtuoso: "npm:^4.7.10"
+    react-virtuoso: "npm:^4.7.12"
     react-window: "npm:^1.8.10"
     sass: "npm:^1.77.1"
     sharp: "npm:^0.33.3"
@@ -9187,13 +9187,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-virtuoso@npm:^4.7.10":
-  version: 4.7.10
-  resolution: "react-virtuoso@npm:4.7.10"
+"react-virtuoso@npm:^4.7.12":
+  version: 4.7.12
+  resolution: "react-virtuoso@npm:4.7.12"
   peerDependencies:
     react: ">=16 || >=17 || >= 18"
     react-dom: ">=16 || >=17 || >= 18"
-  checksum: 10c0/41457c6ab007563b6ea31b1e873f05fc74f7e5b75361fc1dd08b6e72bbaedcdaef04d69773afe99dc28361a1c8546690e914fced2aaf7dd436cd076e52a1b0f6
+  checksum: 10c0/ad595f6a469cda30e5d0d3804c204442e55f2d4c808a2d94f776f4459179d62aad42989191ade33f99850156187086000d7fe09bd2caf4a49a900acb1b3efd1e
   languageName: node
   linkType: hard
 
