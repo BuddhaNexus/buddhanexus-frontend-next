@@ -6,7 +6,6 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { VirtuosoHandle } from "react-virtuoso";
 import type { GetStaticProps } from "next";
 import { useSearchParams } from "next/navigation";
 import { DbViewPageHead } from "@components/db/DbViewPageHead";
@@ -62,8 +61,6 @@ export default function TextPage() {
   const searchParams = useSearchParams();
   const selectedSegment = searchParams.get("selectedSegment");
   const apiQueryParams = cleanUpQueryParams(queryParams);
-
-  const virtualizedListRef = useRef<VirtuosoHandle | null>(null);
 
   const {
     data,
@@ -197,7 +194,6 @@ export default function TextPage() {
           <CenteredProgress />
         ) : (
           <TextView
-            ref={virtualizedListRef}
             data={allParallels}
             hasPreviousPage={hasPreviousPage}
             hasNextPage={hasNextPage}

@@ -1,7 +1,7 @@
 import "allotment/dist/style.css";
 
-import React, { forwardRef, useMemo } from "react";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import React, { useMemo } from "react";
+import { Virtuoso } from "react-virtuoso";
 import {
   EmptyPlaceholder,
   ListLoadingIndicator,
@@ -27,85 +27,76 @@ interface Props {
 }
 
 // todo: check other elements in segmentText
-export const TextView = forwardRef<VirtuosoHandle, Props>(
-  (
-    {
-      data,
-      onEndReached,
-      onStartReached,
-      firstItemIndex,
-      hasPreviousPage,
-      hasNextPage,
-    },
-    virtualizedListRef,
-  ) => {
-    const [selectedSegmentId] = useQueryParam("selectedSegment");
+export const TextView = ({
+  data,
+  onEndReached,
+  onStartReached,
+  firstItemIndex,
+  hasPreviousPage,
+  hasNextPage,
+}: Props) => {
+  const [selectedSegmentId] = useQueryParam("selectedSegment");
 
-    const selectedSegmentMatches = useAtomValue(selectedSegmentMatchesAtom);
+  const selectedSegmentMatches = useAtomValue(selectedSegmentMatchesAtom);
 
-    const colorScale = useMemo(() => {
-      const colors = data.map(
-        (item) => item.segmentText[0]?.highlightColor ?? 0,
-      );
-      const [minColor, maxColor] = [Math.min(...colors), Math.max(...colors)];
+  const colorScale = useMemo(() => {
+    const colors = data.map((item) => item.segmentText[0]?.highlightColor ?? 0);
+    const [minColor, maxColor] = [Math.min(...colors), Math.max(...colors)];
 
-      return chroma
-        .scale("Reds")
-        .padding([0.6, 0])
-        .domain([maxColor, minColor])
-        .correctLightness(true);
-    }, [data]);
+    return chroma
+      .scale("Reds")
+      .padding([0.6, 0])
+      .domain([maxColor, minColor])
+      .correctLightness(true);
+  }, [data]);
 
-    const hasData = data.length > 0;
-    const shouldShowMiddlePane =
-      Boolean(selectedSegmentId) && selectedSegmentMatches.length > 0;
+  const hasData = data.length > 0;
+  const shouldShowMiddlePane =
+    Boolean(selectedSegmentId) && selectedSegmentMatches.length > 0;
 
-    // make sure the selected segment is at the top when the page is opened
-    const selectedSegmentIndexInData = useMemo(() => {
-      if (!hasData) return 0;
-      const index = data.findIndex(
-        (element) => element.segmentNumber === selectedSegmentId,
-      );
-      if (index === -1) return 0;
-      return index;
-    }, [data, hasData, selectedSegmentId]);
-
-    return (
-      <Paper sx={{ flex: 1, py: 1, pl: 2, my: 1 }}>
-        <Allotment defaultSizes={[4, 3]}>
-          {/* Left pane - text (main view) */}
-          <Allotment.Pane>
-            <Virtuoso
-              ref={virtualizedListRef}
-              firstItemIndex={firstItemIndex}
-              initialTopMostItemIndex={selectedSegmentIndexInData}
-              data={hasData && data.length > 0 ? data : undefined}
-              startReached={onStartReached}
-              endReached={onEndReached}
-              overscan={20}
-              totalCount={data.length}
-              initialItemCount={5} // for SSR
-              components={{
-                Footer:
-                  hasData && hasNextPage ? ListLoadingIndicator : undefined,
-                Header:
-                  hasData && hasPreviousPage ? ListLoadingIndicator : undefined,
-                EmptyPlaceholder,
-              }}
-              itemContent={(_, dataSegment) => (
-                <TextSegment data={dataSegment} colorScale={colorScale} />
-              )}
-            />
-          </Allotment.Pane>
-
-          {/* Middle pane - parallels for selected segment */}
-          <Allotment.Pane visible={shouldShowMiddlePane}>
-            <TextViewMiddleParallels />
-          </Allotment.Pane>
-        </Allotment>
-      </Paper>
+  // make sure the selected segment is at the top when the page is opened
+  const selectedSegmentIndexInData = useMemo(() => {
+    if (!hasData) return 0;
+    const index = data.findIndex(
+      (element) => element.segmentNumber === selectedSegmentId,
     );
-  },
-);
+    if (index === -1) return 0;
+    return index;
+  }, [data, hasData, selectedSegmentId]);
+
+  return (
+    <Paper sx={{ flex: 1, py: 1, pl: 2, my: 1 }}>
+      <Allotment defaultSizes={[4, 3]}>
+        {/* Left pane - text (main view) */}
+        <Allotment.Pane>
+          <Virtuoso
+            firstItemIndex={firstItemIndex}
+            initialTopMostItemIndex={selectedSegmentIndexInData}
+            data={hasData && data.length > 0 ? data : undefined}
+            startReached={onStartReached}
+            endReached={onEndReached}
+            overscan={20}
+            totalCount={data.length}
+            initialItemCount={5} // for SSR
+            components={{
+              Footer: hasData && hasNextPage ? ListLoadingIndicator : undefined,
+              Header:
+                hasData && hasPreviousPage ? ListLoadingIndicator : undefined,
+              EmptyPlaceholder,
+            }}
+            itemContent={(_, dataSegment) => (
+              <TextSegment data={dataSegment} colorScale={colorScale} />
+            )}
+          />
+        </Allotment.Pane>
+
+        {/* Middle pane - parallels for selected segment */}
+        <Allotment.Pane visible={shouldShowMiddlePane}>
+          <TextViewMiddleParallels />
+        </Allotment.Pane>
+      </Allotment>
+    </Paper>
+  );
+};
 
 TextView.displayName = "TextView";
