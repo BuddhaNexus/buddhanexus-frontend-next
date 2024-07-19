@@ -75,8 +75,9 @@ export const TextView = ({
             data={hasData && data.length > 0 ? data : undefined}
             startReached={onStartReached}
             endReached={onEndReached}
-            overscan={20}
             totalCount={data.length}
+            overscan={900} // pixel value
+            increaseViewportBy={500} // solves empty content at start/end of list issue
             initialItemCount={5} // for SSR
             components={{
               Footer: hasData && hasNextPage ? ListLoadingIndicator : undefined,
