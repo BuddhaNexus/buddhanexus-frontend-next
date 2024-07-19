@@ -41,7 +41,13 @@ const cleanUpQueryParams = (queryParams: QueryParams): QueryParams => {
   return apiQueryParams;
 };
 
+// arbitrarily high number, as per virtuoso docs
 const START_INDEX = 1_000_000;
+
+// open bugs:
+// - this url opens with the wrong segment selected: http://localhost:3000/db/skt/K01vinv07_u/text?selectedSegment=K01vinv07_u%3A380&selectedSegmentIndex=1
+// - selecting a segment reloads the page
+// - sometimes the top loader appears when there's nothing more to load
 
 export default function TextPage() {
   const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
