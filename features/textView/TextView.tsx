@@ -2,7 +2,10 @@ import "allotment/dist/style.css";
 
 import React, { forwardRef, useMemo } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import { EmptyPlaceholder, Footer } from "@components/db/ListComponents";
+import {
+  EmptyPlaceholder,
+  ListLoadingIndicator,
+} from "@components/db/ListComponents";
 import { Paper } from "@mui/material";
 import { Allotment } from "allotment";
 import chroma from "chroma-js";
@@ -18,6 +21,7 @@ interface Props {
   data: ParsedTextViewParallels;
   onEndReached: () => void;
   onStartReached: () => Promise<void>;
+  hasPreviousPage: boolean;
   hasNextPage: boolean;
   firstItemIndex?: number;
 }
@@ -25,7 +29,14 @@ interface Props {
 // todo: check other elements in segmentText
 export const TextView = forwardRef<VirtuosoHandle, Props>(
   (
-    { data, onEndReached, onStartReached, firstItemIndex, hasNextPage },
+    {
+      data,
+      onEndReached,
+      onStartReached,
+      firstItemIndex,
+      hasPreviousPage,
+      hasNextPage,
+    },
     virtualizedListRef,
   ) => {
     const [selectedSegmentId] = useQueryParam("selectedSegment");
@@ -75,7 +86,10 @@ export const TextView = forwardRef<VirtuosoHandle, Props>(
               totalCount={data.length}
               initialItemCount={5} // for SSR
               components={{
-                Footer: hasData && hasNextPage ? Footer : undefined,
+                Footer:
+                  hasData && hasNextPage ? ListLoadingIndicator : undefined,
+                Header:
+                  hasData && hasPreviousPage ? ListLoadingIndicator : undefined,
                 EmptyPlaceholder,
               }}
               itemContent={(_, dataSegment) => (

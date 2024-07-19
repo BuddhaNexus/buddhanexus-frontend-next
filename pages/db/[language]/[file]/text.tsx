@@ -69,6 +69,7 @@ export default function TextPage() {
     data,
     isSuccess,
     fetchNextPage,
+    hasPreviousPage,
     hasNextPage,
     fetchPreviousPage,
     isLoading,
@@ -198,6 +199,7 @@ export default function TextPage() {
           <TextView
             ref={virtualizedListRef}
             data={allParallels}
+            hasPreviousPage={hasPreviousPage}
             hasNextPage={hasNextPage}
             firstItemIndex={firstItemIndex}
             onStartReached={handleFetchingPreviousPage}
