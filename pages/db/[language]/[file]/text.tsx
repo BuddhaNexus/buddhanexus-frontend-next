@@ -1,5 +1,4 @@
 import React, {
-  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -45,7 +44,12 @@ const cleanUpQueryParams = (queryParams: QueryParams): QueryParams => {
 const START_INDEX = 1_000_000;
 
 // open bugs:
-// - selecting a segment reloads the page
+// 1. Selecting a segment reloads the page
+//   - it's caused by the queryKey param changing. Connected to issue 2
+// 2. On the first page load, the `selectedSegment` search param is not defined.
+//   - experiment with suspense and async components to fix it
+//   - migrating to the app router may also solve it
+//   - https://github.com/vercel/next.js/issues/53543
 
 export default function TextPage() {
   const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
@@ -64,6 +68,7 @@ export default function TextPage() {
 
   const searchParams = useSearchParams();
   const selectedSegment = searchParams.get("selectedSegment");
+
   const apiQueryParams = cleanUpQueryParams(queryParams);
 
   const hasSegmentBeenSelected = useCallback(
@@ -204,20 +209,18 @@ export default function TextPage() {
     >
       <DbViewPageHead />
 
-      <Suspense>
-        {data ? (
-          <TextView
-            data={allParallels}
-            firstItemIndex={firstItemIndex}
-            isFetchingPreviousPage={isFetchingPreviousPage}
-            isFetchingNextPage={isFetchingNextPage}
-            onStartReached={handleFetchingPreviousPage}
-            onEndReached={handleFetchingNextPage}
-          />
-        ) : (
-          <CenteredProgress />
-        )}
-      </Suspense>
+      {data ? (
+        <TextView
+          data={allParallels}
+          firstItemIndex={firstItemIndex}
+          isFetchingPreviousPage={isFetchingPreviousPage}
+          isFetchingNextPage={isFetchingNextPage}
+          onStartReached={handleFetchingPreviousPage}
+          onEndReached={handleFetchingNextPage}
+        />
+      ) : (
+        <CenteredProgress />
+      )}
       <SourceTextBrowserDrawer />
     </PageContainer>
   );

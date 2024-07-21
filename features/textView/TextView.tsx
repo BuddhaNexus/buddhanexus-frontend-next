@@ -36,7 +36,6 @@ export const TextView = ({
   isFetchingNextPage,
 }: Props) => {
   const [selectedSegmentId] = useQueryParam("selectedSegment");
-
   const selectedSegmentMatches = useAtomValue(selectedSegmentMatchesAtom);
 
   const colorScale = useMemo(() => {
