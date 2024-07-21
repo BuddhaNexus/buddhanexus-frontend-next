@@ -45,9 +45,7 @@ const cleanUpQueryParams = (queryParams: QueryParams): QueryParams => {
 const START_INDEX = 1_000_000;
 
 // open bugs:
-// - this url opens with the wrong segment selected: http://localhost:3000/db/skt/K01vinv07_u/text?selectedSegment=K01vinv07_u%3A380&selectedSegmentIndex=1
 // - selecting a segment reloads the page
-// - sometimes the top loader appears when there's nothing more to load
 
 export default function TextPage() {
   const { sourceLanguage, fileName, queryParams, defaultQueryParams } =
@@ -58,7 +56,7 @@ export default function TextPage() {
 
   const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX);
 
-  const hasReceivedDataForSegment = useRef(false);
+  const previouslySelectedSegmentsMap = useRef<Record<string, boolean>>({});
 
   const paginationState = useRef<
     [startEdgePage?: number, endEdgePage?: number]
@@ -67,6 +65,13 @@ export default function TextPage() {
   const searchParams = useSearchParams();
   const selectedSegment = searchParams.get("selectedSegment");
   const apiQueryParams = cleanUpQueryParams(queryParams);
+
+  const hasSegmentBeenSelected = useCallback(
+    (segmentId: string | null): boolean =>
+      segmentId !== null &&
+      Boolean(previouslySelectedSegmentsMap.current[segmentId]),
+    [],
+  );
 
   const {
     data,
@@ -96,7 +101,9 @@ export default function TextPage() {
       // A possible issue with this workaround is that it only runs on the client side.
       // We may need to revisit after moving to the Next.js App Router
 
-      const active_segment = hasReceivedDataForSegment.current
+      // if the `active_segment` param was already sent for this segment,
+      // don't send it anymore.
+      const active_segment = hasSegmentBeenSelected(selectedSegment)
         ? undefined
         : selectedSegment;
 
@@ -127,14 +134,13 @@ export default function TextPage() {
   });
 
   // see queryFn comment above
-  useEffect(() => {
-    if (isSuccess) hasReceivedDataForSegment.current = true;
-  }, [isSuccess]);
-
-  // reset this value after the selectedSegment is changed
-  useEffect(() => {
-    hasReceivedDataForSegment.current = false;
-  }, [selectedSegment]);
+  useEffect(
+    function updatePreviouslySelectedSegmentsMap() {
+      if (isSuccess && selectedSegment)
+        previouslySelectedSegmentsMap.current[selectedSegment] = true;
+    },
+    [isSuccess, selectedSegment],
+  );
 
   useEffect(
     function handleApiResponse() {
@@ -196,12 +202,10 @@ export default function TextPage() {
       isLoading={isLoading || isFetching}
       isQueryResultsPage
     >
-      <Suspense>
-        <DbViewPageHead />
+      <DbViewPageHead />
 
-        {isLoading || !data ? (
-          <CenteredProgress />
-        ) : (
+      <Suspense>
+        {data ? (
           <TextView
             data={allParallels}
             firstItemIndex={firstItemIndex}
@@ -210,10 +214,11 @@ export default function TextPage() {
             onStartReached={handleFetchingPreviousPage}
             onEndReached={handleFetchingNextPage}
           />
+        ) : (
+          <CenteredProgress />
         )}
-
-        <SourceTextBrowserDrawer />
       </Suspense>
+      <SourceTextBrowserDrawer />
     </PageContainer>
   );
 }

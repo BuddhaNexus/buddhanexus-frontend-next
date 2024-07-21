@@ -21,7 +21,6 @@ interface Props {
   data: ParsedTextViewParallels;
   onEndReached: () => void;
   onStartReached: () => Promise<void>;
-  hasPreviousPage: boolean;
   firstItemIndex?: number;
   isFetchingPreviousPage?: boolean;
   isFetchingNextPage?: boolean;
