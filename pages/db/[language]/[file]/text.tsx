@@ -72,9 +72,9 @@ export default function TextPage() {
     data,
     isSuccess,
     fetchNextPage,
-    hasPreviousPage,
-    hasNextPage,
     fetchPreviousPage,
+    isFetchingPreviousPage,
+    isFetchingNextPage,
     isLoading,
     isFetching,
     isError,
@@ -95,6 +95,7 @@ export default function TextPage() {
       //
       // A possible issue with this workaround is that it only runs on the client side.
       // We may need to revisit after moving to the Next.js App Router
+
       const active_segment = hasReceivedDataForSegment.current
         ? undefined
         : selectedSegment;
@@ -203,9 +204,9 @@ export default function TextPage() {
         ) : (
           <TextView
             data={allParallels}
-            hasPreviousPage={hasPreviousPage}
-            hasNextPage={hasNextPage}
             firstItemIndex={firstItemIndex}
+            isFetchingPreviousPage={isFetchingPreviousPage}
+            isFetchingNextPage={isFetchingNextPage}
             onStartReached={handleFetchingPreviousPage}
             onEndReached={handleFetchingNextPage}
           />

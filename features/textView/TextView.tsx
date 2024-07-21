@@ -22,8 +22,9 @@ interface Props {
   onEndReached: () => void;
   onStartReached: () => Promise<void>;
   hasPreviousPage: boolean;
-  hasNextPage: boolean;
   firstItemIndex?: number;
+  isFetchingPreviousPage?: boolean;
+  isFetchingNextPage?: boolean;
 }
 
 // todo: check other elements in segmentText
@@ -32,8 +33,8 @@ export const TextView = ({
   onEndReached,
   onStartReached,
   firstItemIndex,
-  hasPreviousPage,
-  hasNextPage,
+  isFetchingPreviousPage,
+  isFetchingNextPage,
 }: Props) => {
   const [selectedSegmentId] = useQueryParam("selectedSegment");
 
@@ -80,9 +81,8 @@ export const TextView = ({
             increaseViewportBy={500} // solves empty content at start/end of list issue
             initialItemCount={5} // for SSR
             components={{
-              Footer: hasData && hasNextPage ? ListLoadingIndicator : undefined,
-              Header:
-                hasData && hasPreviousPage ? ListLoadingIndicator : undefined,
+              Header: isFetchingPreviousPage ? ListLoadingIndicator : undefined,
+              Footer: isFetchingNextPage ? ListLoadingIndicator : undefined,
               EmptyPlaceholder,
             }}
             itemContent={(_, dataSegment) => (
