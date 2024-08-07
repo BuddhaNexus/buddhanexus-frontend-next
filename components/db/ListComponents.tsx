@@ -1,7 +1,7 @@
 import { useTranslation } from "next-i18next";
 import { Typography } from "@mui/material";
 
-export const Footer = () => {
+export const LoadingFooter = () => {
   const { t } = useTranslation("common");
 
   return (

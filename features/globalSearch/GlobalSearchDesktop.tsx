@@ -42,7 +42,8 @@ const GlobalSearchDesktop = () => {
     >
       <IconButton
         color="inherit"
-        aria-label={t("search.toggleSearch")}
+        // i18n leads to unknown server/client mismatch error
+        aria-label="search"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? (

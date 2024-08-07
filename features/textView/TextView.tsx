@@ -2,7 +2,7 @@ import "allotment/dist/style.css";
 
 import React, { useMemo } from "react";
 import { Virtuoso } from "react-virtuoso";
-import { EmptyPlaceholder, Footer } from "@components/db/ListComponents";
+import { EmptyPlaceholder, LoadingFooter } from "@components/db/ListComponents";
 import { Paper } from "@mui/material";
 import { Allotment } from "allotment";
 import chroma from "chroma-js";
@@ -18,6 +18,7 @@ interface Props {
   data: ParsedTextViewParallelsData;
   onEndReached: () => void;
   onStartReached: () => void;
+  isFetching: boolean;
 }
 
 // todo: check other elements in segmentText
@@ -25,6 +26,7 @@ export default function TextView({
   data,
   onEndReached,
   onStartReached,
+  isFetching,
 }: Props) {
   const [selectedSegmentId] = useQueryParam("selectedSegment");
 
@@ -71,7 +73,7 @@ export default function TextView({
             startReached={onStartReached}
             overscan={20}
             components={{
-              Footer: hasData ? Footer : undefined,
+              Footer: isFetching ? LoadingFooter : undefined,
               EmptyPlaceholder,
             }}
           />
