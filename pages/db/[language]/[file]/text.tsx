@@ -85,24 +85,30 @@ export default function TextPage() {
     setTextViewFilterComparison,
   ]);
 
-  const { data, fetchNextPage, fetchPreviousPage, isLoading, isError } =
-    useInfiniteQuery({
-      initialPageParam: 0,
-      queryKey: DbApi.TextView.makeQueryKey({
+  const {
+    data,
+    fetchNextPage,
+    fetchPreviousPage,
+    isLoading,
+    isFetching,
+    isError,
+  } = useInfiniteQuery({
+    initialPageParam: 0,
+    queryKey: DbApi.TextView.makeQueryKey({
+      file_name: fileName,
+      ...paramsThatShouldRefreshText,
+    }),
+    queryFn: ({ pageParam }) =>
+      DbApi.TextView.call({
         file_name: fileName,
-        ...paramsThatShouldRefreshText,
+        ...defaultQueryParams,
+        ...queryParams,
+        page_number: pageParam,
       }),
-      queryFn: ({ pageParam }) =>
-        DbApi.TextView.call({
-          file_name: fileName,
-          ...defaultQueryParams,
-          ...queryParams,
-          page_number: pageParam,
-        }),
-      getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
-      getPreviousPageParam: (lastPage) =>
-        lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
-    });
+    getNextPageParam: (lastPage) => lastPage.pageNumber + 1,
+    getPreviousPageParam: (lastPage) =>
+      lastPage.pageNumber === 0 ? undefined : lastPage.pageNumber - 1,
+  });
 
   const allData = useMemo(
     () => (data ? data.pages.flatMap((page) => page.data) : []),
@@ -134,6 +140,7 @@ export default function TextPage() {
       ) : (
         <TextView
           data={allData}
+          isFetching={isFetching}
           onEndReached={fetchNextPage}
           onStartReached={fetchPreviousPage}
         />

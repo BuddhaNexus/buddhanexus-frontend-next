@@ -33,7 +33,7 @@ export default function TablePage() {
     [fileName, defaultQueryParams, queryParams],
   );
 
-  const { data, fetchNextPage, fetchPreviousPage, isLoading } =
+  const { data, fetchNextPage, fetchPreviousPage, isLoading, isFetching } =
     useInfiniteQuery({
       initialPageParam: 0,
       queryKey: DbApi.TableView.makeQueryKey(requestBody),
@@ -74,6 +74,7 @@ export default function TablePage() {
       ) : (
         <TableView
           data={allData}
+          isFetching={isFetching}
           onEndReached={fetchNextPage}
           onStartReached={fetchPreviousPage}
         />

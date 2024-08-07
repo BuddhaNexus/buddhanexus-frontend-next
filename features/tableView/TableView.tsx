@@ -1,5 +1,5 @@
 import { Virtuoso } from "react-virtuoso";
-import { EmptyPlaceholder, Footer } from "@components/db/ListComponents";
+import { EmptyPlaceholder, LoadingFooter } from "@components/db/ListComponents";
 import type { ParsedTableViewData } from "utils/api/endpoints/table-view/table";
 
 import { TableViewRow } from "./TableViewRow";
@@ -8,12 +8,14 @@ interface Props {
   data: ParsedTableViewData;
   onEndReached: () => void;
   onStartReached: () => void;
+  isFetching: boolean;
 }
 
 export default function TableView({
   data,
   onEndReached,
   onStartReached,
+  isFetching,
 }: Props) {
   const hasData = data.length > 0;
   // we have to pass `undefined` here to display the EmptyPlaceholder.
@@ -25,7 +27,10 @@ export default function TableView({
       endReached={onEndReached}
       startReached={onStartReached}
       overscan={20}
-      components={{ Footer: hasData ? Footer : undefined, EmptyPlaceholder }}
+      components={{
+        Footer: isFetching ? LoadingFooter : undefined,
+        EmptyPlaceholder,
+      }}
     />
   );
 }
