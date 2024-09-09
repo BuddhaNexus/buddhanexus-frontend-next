@@ -33,12 +33,12 @@ export type ParsedTextViewParallel = ParsedTextViewParallelsData["items"][0];
 export async function getTextViewParallelsData(
   body: APITextViewParallelsV2RequestBody,
 ) {
-  const page = body.page_number ?? 0;
+  const { page_number = 0, ...params } = body;
 
   const { data } = await apiClient.POST("/text-view/text-parallels-v2/", {
     body: {
-      ...parseAPIRequestBody({ ...body, page }),
-      // TODO: add support for multiple languages when available
+      ...parseAPIRequestBody({ ...params, page_number }),
+      // TODO: remove once backend model is updated
       multi_lingual: ["skt", "pli", "chn", "tib"],
     },
   });
@@ -48,7 +48,7 @@ export async function getTextViewParallelsData(
   }
 
   return {
-    data: parseTextViewParallelsData(data),
-    pageNumber: page,
+    data: parseTextViewParallelsData(data ?? []),
+    pageNumber: page_number,
   };
 }
