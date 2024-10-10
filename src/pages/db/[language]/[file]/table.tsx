@@ -13,7 +13,7 @@ import { useSetDbViewFromPath } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
-import { SourceTextBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
+import { DbSourceBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import TableView from "@features/tableView/TableView";
 import {
   // dehydrate,
@@ -86,7 +86,7 @@ export default function TablePage() {
           onStartReached={fetchPreviousPage}
         />
       )}
-      <SourceTextBrowserDrawer />
+      <DbSourceBrowserDrawer />
     </PageContainer>
   );
 }

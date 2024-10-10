@@ -16,9 +16,12 @@ import { useSetDbViewFromPath } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
+import { DbSourceBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
+
+export { getDbViewFileStaticPaths as getStaticPaths } from "@utils/nextJsHelpers";
+
 import { HistogramDataChart } from "@features/graphView/HistogramDataChart";
 import { PieDataChart } from "@features/graphView/PieDataChart";
-import { SourceTextBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import { Box, Paper, Typography } from "@mui/material";
 import {
   // dehydrate,
@@ -134,7 +137,7 @@ export default function GraphPage() {
           </GraphContainer>
         </Box>
       )}
-      <SourceTextBrowserDrawer />
+      <DbSourceBrowserDrawer />
     </PageContainer>
   );
 }

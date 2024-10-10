@@ -16,7 +16,7 @@ import { useSetDbViewFromPath } from "@components/hooks/useDbView";
 import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
-import { SourceTextBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
+import { DbSourceBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import { TextView } from "@features/textView/TextView";
 // import { dehydrate, useInfiniteQuery } from "@tanstack/react-query";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -224,7 +224,7 @@ export default function TextPage() {
       ) : (
         <CenteredProgress />
       )}
-      <SourceTextBrowserDrawer />
+      <DbSourceBrowserDrawer />
     </PageContainer>
   );
 }
