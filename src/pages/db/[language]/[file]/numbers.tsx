@@ -15,15 +15,15 @@ import { useSourceFile } from "@components/hooks/useSourceFile";
 import { CenteredProgress } from "@components/layout/CenteredProgress";
 import { PageContainer } from "@components/layout/PageContainer";
 import NumbersTable from "@features/numbersView/NumbersTable";
-import { SourceTextBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
+import { DbSourceBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import {
   // dehydrate,
   keepPreviousData,
   useInfiniteQuery,
   useQuery,
 } from "@tanstack/react-query";
-// import { prefetchDbResultsPageData } from "@utils/api/apiQueryUtils";
 import { DbApi } from "@utils/api/dbApi";
+// import { prefetchDbResultsPageData } from "@utils/api/apiQueryUtils";
 
 // export { getDbViewFileStaticPaths as getStaticPaths } from "@utils/nextJsHelpers";
 
@@ -121,7 +121,7 @@ export default function NumbersPage() {
         language={sourceLanguage}
         fileName={fileName}
       />
-      <SourceTextBrowserDrawer />
+      <DbSourceBrowserDrawer />
     </PageContainer>
   );
 }

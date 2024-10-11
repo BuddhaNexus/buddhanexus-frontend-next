@@ -1,34 +1,31 @@
 import { Fragment, memo, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useTranslation } from "next-i18next";
+import { currentDbViewAtom } from "@atoms";
 import { useDbQueryParams } from "@components/hooks/useDbQueryParams";
-import { currentViewAtom } from "@features/atoms";
 import { isSettingOmitted } from "@features/sidebarSuite/common/dbSidebarHelpers";
 import PanelHeading from "@features/sidebarSuite/common/PanelHeading";
 import { UniqueSettingsType } from "@features/sidebarSuite/config/settings";
 import type { SidebarSuitePageContext } from "@features/sidebarSuite/config/types";
 import { StandinSetting } from "@features/sidebarSuite/SidebarSuite";
 import {
-  IncludeExcludeFilters,
+  DbSourceFilters,
   ParLengthFilter,
   ScoreFilter,
   SearchLanguageSelector,
 } from "@features/sidebarSuite/subComponents/settings";
 import { DbViewSelector } from "@features/sidebarSuite/subComponents/settings/DbViewSelector";
 import { Box } from "@mui/material";
-import { SourceLanguage } from "@utils/constants";
 import { useAtomValue } from "jotai";
 
 type FiltersProps = {
   filters: string[];
   uniqueSettings: UniqueSettingsType;
-  sourceLanguage: SourceLanguage;
 };
 
 const Filters = memo(function Filters({
   filters,
   uniqueSettings,
-  sourceLanguage,
 }: FiltersProps) {
   return filters.map((filter) => {
     const key = `filter-setting-${filter}`;
@@ -48,7 +45,7 @@ const Filters = memo(function Filters({
       //   return <MultiLingualSelector key={key} />;
       // }
       case uniqueSettings.queryParams.limits: {
-        return <IncludeExcludeFilters key={key} language={sourceLanguage} />;
+        return <DbSourceFilters key={key} />;
       }
       case uniqueSettings.queryParams.targetCollection: {
         return (
@@ -68,7 +65,7 @@ export const PrimarySettings = ({
   pageType: SidebarSuitePageContext;
 }) => {
   const { t } = useTranslation("settings");
-  const currentView = useAtomValue(currentViewAtom);
+  const currentView = useAtomValue(currentDbViewAtom);
   const router = useRouter();
   const isDbRoute = router.route.startsWith("/db");
 
@@ -99,22 +96,24 @@ export const PrimarySettings = ({
     pageSettings,
   ]);
 
-  return filters.length > 0 ? (
+  if (filters.length === 0) return null;
+
+  if (isDbRoute) {
+    return (
+      <Box>
+        <PanelHeading heading={t("tabs.settings")} />
+        <DbViewSelector />
+
+        <PanelHeading heading={t("headings.filters")} sx={{ mt: 1 }} />
+        <Filters filters={filters} uniqueSettings={uniqueSettings} />
+      </Box>
+    );
+  }
+
+  return (
     <Box>
-      {isDbRoute ? (
-        <>
-          <PanelHeading heading={t("tabs.settings")} />
-          <DbViewSelector />
-        </>
-      ) : null}
-
       <PanelHeading heading={t("headings.filters")} sx={{ mt: 1 }} />
-
-      <Filters
-        filters={filters}
-        uniqueSettings={uniqueSettings}
-        sourceLanguage={sourceLanguage}
-      />
+      <Filters filters={filters} uniqueSettings={uniqueSettings} />
     </Box>
-  ) : null;
+  );
 };

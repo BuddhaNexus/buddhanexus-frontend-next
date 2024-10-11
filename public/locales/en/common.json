@@ -44,13 +44,17 @@
     "backToNews": "Back to News"
   },
   "textBrowser": {
-    "mainPrompt": "Browse texts in {{ languageName }}"
+    "mainPrompt": "Browse {{ languageName }} texts"
   },
   "prompts": {
-    "genericErrorTitle": "Something went wrong",
+    "genericErrorTitle": "Something went wrong.",
     "genericErrorDescription": "Please contact us if the issue persists.",
     "loading": "Loading...",
-    "noResults": "No results found."
+    "noResults": "No results found.",
+    "showLess": "Show Less",
+    "showAll": "Show All ({{count}})",
+    "openAll": "Open All",
+    "closeAll": "Close All"
   },
   "search": {
     "pageTitle": "Search Results",

@@ -16,7 +16,6 @@ import {
   SearchBoxWrapper,
 } from "@features/globalSearch/GlobalSearchStyledMuiComponents";
 import NoSearchResultsFound from "@features/globalSearch/NoSearchResultsFound";
-import { SourceTextBrowserDrawer } from "@features/sourceTextBrowserDrawer/sourceTextBrowserDrawer";
 import { Close, Search } from "@mui/icons-material";
 import { CircularProgress, IconButton, Typography } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
@@ -138,8 +137,6 @@ export default function SearchPage() {
           )}
         </>
       )}
-
-      <SourceTextBrowserDrawer />
     </PageContainer>
   );
 }
